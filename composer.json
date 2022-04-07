@@ -1,0 +1,24 @@
+{
+    "name": "joanrodas/plubo-routes",
+    "description": "WordPress routes made simple.",
+    "keywords": ["plugin", "wordpress", "routes", "wp", "routing"],
+    "homepage": "https://github.com/joanrodas/plubo-routes",
+    "license": "GPL-3.0+",
+    "authors": [
+      {
+        "name": "Joan Rodas Cusidó",
+        "email": "joan@sirvelia.com",
+        "homepage": "https://sirvelia.com",
+        "role": "Developer"
+      }
+    ],
+    "autoload": {
+      "psr-4": {
+        "PluboRoutes\\": "PluboRoutes/"
+      }
+    },
+    "require": {
+      "php": ">=7.4",
+      "jenssegers/blade": "^1.4"
+    }
+}
