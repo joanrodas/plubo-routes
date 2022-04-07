@@ -43,10 +43,13 @@ add_filter('plubo/routes', function($routes) {
 * word (a-Z only)
 * slug (a valid WordPress slug)
 * date (yyyy-mm-dd date)
+* year (4 digits)
+* month (01-12)
+* day (01-31)
 * digit (single digit 0-9)
 * jwt (JWT token)
 
-> You can also use custom regex like ([a-z0-9-]+)
+> You can also use custom regex patterns using the format **{variable_name:regex_patter}** like **{example:([a-z0-9-]+)}**
 
 <br/>
 

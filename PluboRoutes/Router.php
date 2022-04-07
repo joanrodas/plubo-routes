@@ -98,9 +98,10 @@ class Router
           $patterns = $matches[1];
           foreach ($patterns as $key => $pattern) {
             $pattern_array = explode(':', $pattern);
-            if( count($pattern_array) === 2) {
+            if( count($pattern_array) >= 2) {
               $name = $pattern_array[0];
               $type = $pattern_array[1];
+              // $optional = ( isset($pattern_array[2]) && $pattern_array[2] === 'optional' ) ? '?' : '';
               $match_num = $key+1;
 
               switch ($type) {
@@ -117,7 +118,7 @@ class Router
                   break;
 
                 case 'date':
-                  $regex_path = str_replace($matches[0][$key], "([a-z0-9-]+)", $regex_path);
+                  $regex_path = str_replace($matches[0][$key], "(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))", $regex_path);
                   add_rewrite_tag('%'.$name.'%', '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))');
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
@@ -128,13 +129,31 @@ class Router
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
 
-                case: 'digit':
+                case 'digit':
                   $regex_path = str_replace($matches[0][$key], "([0-9])", $regex_path);
                   add_rewrite_tag('%'.$name.'%', '([0-9])');
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
 
-                case: 'jwt':
+                case 'year':
+                  $regex_path = str_replace($matches[0][$key], "(\d{4})", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '(\d{4})');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case 'month':
+                  $regex_path = str_replace($matches[0][$key], "(0[1-9]|1[0-2])", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '(0[1-9]|1[0-2])');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case 'day':
+                  $regex_path = str_replace($matches[0][$key], "(0[1-9]|[12][0-9]|3[01])", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '(0[1-9]|[12][0-9]|3[01])');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case 'jwt':
                   $regex_path = str_replace($matches[0][$key], "((?:[\w-]*\.){2}[\w-]*)", $regex_path);
                   add_rewrite_tag('%'.$name.'%', '((?:[\w-]*\.){2}[\w-]*)');
                   $index_string .= "&$name=\$matches[$match_num]";
