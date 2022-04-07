@@ -37,13 +37,16 @@ add_filter('plubo/routes', function($routes) {
   return $routes;
 }); ?>
 ```
- 
+
 ### Available syntax:
 * number (numbers only)
 * word (a-Z only)
-* text (any valid url characters)
-* slug (valid WordPress slug)
-* date (Y-m-d format)
+* slug (a valid WordPress slug)
+* date (yyyy-mm-dd date)
+* digit (single digit 0-9)
+* jwt (JWT token)
+
+> You can also use custom regex like ([a-z0-9-]+)
 
 <br/>
 

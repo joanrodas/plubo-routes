@@ -111,14 +111,38 @@ class Router
                   break;
 
                 case 'word':
+                  $regex_path = str_replace($matches[0][$key], "([a-zA-Z]+)", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '([a-zA-Z]+)');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case 'date':
+                  $regex_path = str_replace($matches[0][$key], "([a-z0-9-]+)", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case 'slug':
                   $regex_path = str_replace($matches[0][$key], "([a-z0-9-]+)", $regex_path);
                   add_rewrite_tag('%'.$name.'%', '([a-z0-9-]+)');
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
 
-                default:
-                  $regex_path = str_replace($matches[0][$key], "(.+)", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(.+)');
+                case: 'digit':
+                  $regex_path = str_replace($matches[0][$key], "([0-9])", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '([0-9])');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                case: 'jwt':
+                  $regex_path = str_replace($matches[0][$key], "((?:[\w-]*\.){2}[\w-]*)", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '((?:[\w-]*\.){2}[\w-]*)');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
+                default: //Allow custom regex
+                  $regex_path = str_replace($matches[0][$key], $type, $regex_path);
+                  add_rewrite_tag('%'.$name.'%', $type);
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
               }
