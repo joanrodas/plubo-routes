@@ -159,6 +159,12 @@ class Router
                   $index_string .= "&$name=\$matches[$match_num]";
                   break;
 
+                case 'ip':
+                  $regex_path = str_replace($matches[0][$key], "(([0-9]{1,3}\.){3}[0-9]{1,3})", $regex_path);
+                  add_rewrite_tag('%'.$name.'%', '(([0-9]{1,3}\.){3}[0-9]{1,3})');
+                  $index_string .= "&$name=\$matches[$match_num]";
+                  break;
+
                 default: //Allow custom regex
                   $regex_path = str_replace($matches[0][$key], $type, $regex_path);
                   add_rewrite_tag('%'.$name.'%', $type);
