@@ -26,8 +26,14 @@ WordPress routes made simple.
 ## Adding new routes
 
 ```php
-<?php add_filter('plubo/routes', function($routes) {
-  $routes[] = new PluboRoutes\Route('route_name', 'example/{city:word}/{id:number}', 'template_path');
+<?php
+use PluboRoutes\PluboRoutesProcessor;
+use PluboRoutes\Route;
+
+PluboRoutesProcessor::init();
+
+add_filter('plubo/routes', function($routes) {
+  $routes[] = new Route('route_name', 'example/{city:word}/{id:number}', 'template_path');
   return $routes;
 }); ?>
 ```
