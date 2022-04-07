@@ -72,17 +72,16 @@ class PluboRoutesProcessor
      */
     public function route_template_include($template)
     {
-        if ( !$this->matched_route instanceof Route )
-            return $template;
+        if ( !$this->matched_route instanceof Route ) return $template;
 
-        // $template = $this->matched_route->get_template();
-        $route_template = plugin_dir_path( __FILE__ ) . 'BladeRedirector.php';
+        $template = apply_filters( 'plubo/template', $this->matched_route->get_template() );
 
-        if ( !empty($route_template) ) {
-            $template = $route_template;
-        }
-        error_log('TEMPLATE', true);
-        error_log($template, true);
+        // $route_template = plugin_dir_path( __FILE__ ) . 'BladeRedirector.php';
+        // if ( !empty($route_template) ) {
+        //     $template = $route_template;
+        // }
+        // error_log('TEMPLATE', true);
+        // error_log($template, true);
 
         return $template;
     }
@@ -94,13 +93,10 @@ class PluboRoutesProcessor
      */
     public function match_route_request(\WP $wp)
     {
-      // die(print_r($wp, true));
         $matched_route = $this->router->match($wp->query_vars);
-        // die(print_r($matched_route, true));
 
         if ($matched_route instanceof Route) {
-            // die(print_r($matched_route, true));
-            $this->matched_route = $matched_route;
+            $this->matched_route =  apply_filters( 'plubo/matched_route', $matched_route, $wp->query_vars );
         }
 
         if ($matched_route instanceof \WP_Error && in_array('route_not_found', $matched_route->get_error_codes())) {

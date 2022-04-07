@@ -66,15 +66,12 @@ class Router
     public function match(array $query_variables)
     {
         if (empty($query_variables[$this->route_variable])) {
-            return new \WP_Error('missing_route_variable');
+          return new \WP_Error('missing_route_variable');
         }
 
         $route_name = $query_variables[$this->route_variable];
-        $key = array_search($route_name, array_column($this->routes, 0));
-
-        if ($key === FALSE) {
-          // die( print_r($this->routes[$key], true) );
-          return $this->routes[$key];
+        foreach ($this->routes as $key => $route) {
+          if($route->get_name() === $route_name) return $route;
         }
 
         return new \WP_Error('route_not_found');
