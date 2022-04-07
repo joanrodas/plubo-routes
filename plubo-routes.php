@@ -21,6 +21,12 @@ require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 PluboRoutes\PluboRoutesProcessor::init();
 
 // add_filter('plubo/routes', function($routes) {
-//   $routes[] = new PluboRoutes\Route('testing', 'testing/{year:number}/{city:word}', 'test');
+//   $routes[] = new PluboRoutes\Route('route_name', 'test/{year:number}/{city:word}', 'template_path');
 //   return $routes;
 // });
+
+/* AVAILABLE ROUTE SYNTAX
+{variable_name:word}
+{variable_name:number}
+{variable_name:text}
+*/

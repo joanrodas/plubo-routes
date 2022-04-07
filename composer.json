@@ -17,6 +17,9 @@
         "PluboRoutes\\": "PluboRoutes/"
       }
     },
+    "bin": [
+      "bin/plubo-routes"
+    ],
     "require": {
       "php": ">=7.4",
       "jenssegers/blade": "^1.4"
