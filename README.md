@@ -19,7 +19,39 @@ WordPress routes made simple.
 
 `composer require joanrodas/plubo-routes`
 
+> You can also install Plubo Routes as a standalone WordPress plugin, simply downloading the zip and placing it in the plugins folder.
+
 <br/>
+
+## Adding new routes
+
+```php
+<?php add_filter('plubo/routes', function($routes) {
+  $routes[] = new PluboRoutes\Route('route_name', 'example/{city:word}/{id:number}', 'template_path');
+  return $routes;
+}); ?>
+```
+ 
+### Available syntax:
+* number (numbers only)
+* word (a-Z only)
+* text (any valid url characters)
+* slug (valid WordPress slug)
+* date (Y-m-d format)
+
+<br/>
+
+## Route Actions
+
+You can execute your custom functions:
+
+```php
+<?php add_action('plubo/route_{route_name}', function() {
+  #Execute code
+}); ?>
+```
+
+<br>
 
 ## Contributions
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=for-the-badge)](https://github.com/joanrodas/plubo-routes/issues)
