@@ -2,9 +2,6 @@
 namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
-use PluboRoutes\Route\Route;
-use PluboRoutes\Route\RedirectRoute;
-use PluboRoutes\Route\ActionRoute;
 
 /**
  * The Router manages routes using the WordPress rewrite API.
@@ -116,29 +113,7 @@ class Router
     }
 
     private function get_regex_by_type($type) {
-      switch ($type) {
-        case 'number':
-          return '([0-9]+)';
-        case 'word':
-          return '([a-zA-Z]+)';
-        case 'date':
-          return '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
-        case 'slug':
-          return '([a-z0-9-]+)';
-        case 'digit':
-          return '([0-9])';
-        case 'year':
-          return '(\d{4})';
-        case 'month':
-          return '(0[1-9]|1[0-2])';
-        case 'day':
-          return '(0[1-9]|[12][0-9]|3[01])';
-        case 'jwt':
-          return '((?:[\w-]*\.){2}[\w-]*)';
-        case 'ip':
-          return '(([0-9]{1,3}\.){3}[0-9]{1,3})';
-      }
-      return $type; //Allow custom regex
+      return Helpers\RegexHelper::getRegex($type);
     }
 
 }
