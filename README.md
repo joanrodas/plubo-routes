@@ -3,7 +3,7 @@
 </p>
 
 [![GitHub stars](https://img.shields.io/github/stars/joanrodas/plubo-routes?style=for-the-badge)](https://github.com/joanrodas/plubo-routes/stargazers)
-
+![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability-percentage/joanrodas/plubo-routes?style=for-the-badge)
 
 WordPress routes made simple.
 
