@@ -91,20 +91,15 @@ class Router
         $regex_path = $this->clean_path( $route->getPath() );
         $index_string = 'index.php?'.$this->route_variable.'='.$route->getName();
         $route_args = array();
-
         preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
-
         if( isset($matches[1]) ) {
           $patterns = $matches[1];
           foreach ($patterns as $key => $pattern) {
             $pattern_array = explode(':', $pattern);
             if( count($pattern_array) >= 2) {
               $name = $pattern_array[0];
-              $type = $pattern_array[1];
               $match_num = $key+1;
-
-              $regex_code = $this->get_regex_by_type($type);
-
+              $regex_code = $this->get_regex_by_type($pattern_array[1]);
               $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
               add_rewrite_tag('%'.$name.'%', $regex_code);
               $index_string .= "&$name=\$matches[$match_num]";
@@ -112,9 +107,7 @@ class Router
             }
           }
         }
-
-        $regex_path = '^'.$regex_path.'$';
-        add_rewrite_rule($regex_path, $index_string, $position);
+        add_rewrite_rule("^$regex_path$", $index_string, $position);
         $route->setArgs($route_args);
     }
 
@@ -123,7 +116,6 @@ class Router
     }
 
     private function get_regex_by_type($type) {
-
       switch ($type) {
         case 'number':
           $type = '([0-9]+)';
@@ -154,10 +146,7 @@ class Router
           break;
         case 'ip':
           $type = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
-          break;
-        default: //Allow custom regex
-          break;
-      }
+      } //Default: Allow custom regex
       return $type;
     }
 
