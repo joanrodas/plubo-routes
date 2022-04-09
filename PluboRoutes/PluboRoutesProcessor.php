@@ -124,12 +124,16 @@ class PluboRoutesProcessor
         $is_callable = $this->matched_route->hasCallback();
         $redirect_to = $this->matched_route->getAction();
 
-        if($is_callable)
-          $redirect_to = call_user_func( $redirect_to, $this->matched_args );
+        if($is_callable) $redirect_to = call_user_func( $redirect_to, $this->matched_args );
 
-        if($this->matched_route->isExternal()) wp_redirect($redirect_to, $status);
-        else wp_safe_redirect( home_url($redirect_to), $status );
-        die;
+        nocache_headers();
+        if($this->matched_route->isExternal()) {
+          wp_redirect($redirect_to, $status);
+          exit;
+        }
+
+        wp_safe_redirect( home_url($redirect_to), $status );
+        exit;
       }
     }
 
@@ -141,22 +145,14 @@ class PluboRoutesProcessor
      * @return string
      */
     public function route_template_include($template) {
-        if ( !$this->matched_route instanceof Route ) return $template;
+      if ( !$this->matched_route instanceof Route ) return $template;
 
-        if($this->matched_route->hasTemplateCallback()) {
-          $template_func = $this->matched_route->getTemplate();
-          $template = call_user_func( $template_func, $this->matched_args );
-        }
-        else $template = apply_filters( 'plubo/template', locate_template( $this->matched_route->getTemplate() ) );
-
-        // $route_template = plugin_dir_path( __FILE__ ) . 'BladeRedirector.php';
-        // if ( !empty($route_template) ) {
-        //     $template = $route_template;
-        // }
-        // error_log('TEMPLATE', true);
-        // error_log($template, true);
-
-        return $template;
+      if($this->matched_route->hasTemplateCallback()) {
+        $template_func = $this->matched_route->getTemplate();
+        $template = call_user_func( $template_func, $this->matched_args );
+      }
+      else $template = apply_filters( 'plubo/template', locate_template( $this->matched_route->getTemplate() ) );
+      return $template;
     }
 
 
