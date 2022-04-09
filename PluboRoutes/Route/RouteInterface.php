@@ -12,6 +12,6 @@ interface RouteInterface extends \Serializable
     public function getAction();
     public function getConfig();
     public function hasCallback();
-    public function setArgs($args);
+    public function addArg($arg);
     public function getArgs();
 }

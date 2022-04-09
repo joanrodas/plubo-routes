@@ -51,8 +51,8 @@ trait RouteTrait {
    *
    * @param array
    */
-  public function setArgs($args) {
-    $this->args = $args;
+  public function addArg($arg) {
+    $this->args[] = $arg;
   }
 
   /**

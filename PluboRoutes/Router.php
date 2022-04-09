@@ -87,7 +87,6 @@ class Router
     private function add_rule(RouteInterface $route, $position = 'top') {
       $regex_path = $this->clean_path( $route->getPath() );
       $index_string = 'index.php?'.$this->route_variable.'='.$route->getName();
-      $route_args = array();
       if( preg_match_all('#\{(.+?)\}#', $regex_path, $matches) ) {
         $patterns = $matches[1];
         foreach ($patterns as $key => $pattern) {
@@ -99,12 +98,12 @@ class Router
             $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
             add_rewrite_tag('%'.$name.'%', $regex_code);
             $index_string .= "&$name=\$matches[$match_num]";
-            $route_args[] = $name;
+            $route->addArg($name);
           }
         }
       }
       add_rewrite_rule("^$regex_path$", $index_string, $position);
-      $route->setArgs($route_args);
+
     }
 
     private function clean_path($path) {
