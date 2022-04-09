@@ -13,7 +13,7 @@ use PluboRoutes\Route\RouteInterface;
  * the rest of WordPress.
  *
  * @author Joan Rodas <joan@sirvelia.com>
- * Based on the work of Carl Alexander <contact@carlalexander.ca>
+ *
  */
 class PluboRoutesProcessor
 {
@@ -109,32 +109,35 @@ class PluboRoutesProcessor
      * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
     public function route_action() {
+
       if ( $this->matched_route instanceof Route ) {
         status_header( 200 );
         do_action( $this->matched_route->getAction(), $this->matched_args );
       }
+
       else if ( $this->matched_route instanceof ActionRoute ) {
-        $is_callable = $this->matched_route->hasCallback();
         $action = $this->matched_route->getAction();
-        if($is_callable) $action = call_user_func( $action, $this->matched_args );
+        if( $this->matched_route->hasCallback() )
+          $action = call_user_func($action, $this->matched_args);
         do_action( $action );
       }
+
       else if ( $this->matched_route instanceof RedirectRoute ) {
-        $status = $this->matched_route->getStatus();
-        $is_callable = $this->matched_route->hasCallback();
         $redirect_to = $this->matched_route->getAction();
 
-        if($is_callable) $redirect_to = call_user_func( $redirect_to, $this->matched_args );
+        if( $this->matched_route->hasCallback() )
+          $redirect_to = call_user_func($redirect_to, $this->matched_args);
 
         nocache_headers();
         if($this->matched_route->isExternal()) {
-          wp_redirect($redirect_to, $status);
+          wp_redirect($redirect_to, $this->matched_route->getStatus());
           exit;
         }
 
-        wp_safe_redirect( home_url($redirect_to), $status );
+        wp_safe_redirect( home_url($redirect_to), $this->matched_route->getStatus() );
         exit;
       }
+
     }
 
     /**
