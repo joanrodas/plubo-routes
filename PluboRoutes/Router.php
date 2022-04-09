@@ -1,7 +1,10 @@
 <?php
 namespace PluboRoutes;
 
-use PluboRoutes\Route;
+use PluboRoutes\Route\RouteInterface;
+use PluboRoutes\Route\Route;
+use PluboRoutes\Route\RedirectRoute;
+use PluboRoutes\Route\ActionRoute;
 
 /**
  * The Router manages routes using the WordPress rewrite API.
@@ -36,9 +39,9 @@ class Router
     /**
      * Add a route to the router.
      *
-     * @param Route  $route
+     * @param RouteInterface  $route
      */
-    public function add_route(Route $route)
+    public function add_route(RouteInterface $route)
     {
         $this->routes[] = $route;
     }
@@ -61,7 +64,7 @@ class Router
      *
      * @param array $query_variables
      *
-     * @return Route|WP_Error
+     * @return RouteInterface|WP_Error
      */
     public function match(array $query_variables)
     {
@@ -71,7 +74,7 @@ class Router
 
         $route_name = $query_variables[$this->route_variable];
         foreach ($this->routes as $key => $route) {
-          if($route->get_name() === $route_name) return $route;
+          if($route->getName() === $route_name) return $route;
         }
 
         return new \WP_Error('route_not_found');
@@ -81,13 +84,13 @@ class Router
     /**
      * Adds a new WordPress rewrite rule for the given Route.
      *
-     * @param Route  $route
+     * @param RouteInterface  $route
      * @param string $position
      */
-    private function add_rule(Route $route, $position = 'top')
-    {
-        $regex_path = ltrim( trim($route->get_path() ), '/' );
-        $index_string = 'index.php?'.$this->route_variable.'='.$route->get_name();
+    private function add_rule(RouteInterface $route, $position = 'top') {
+        $regex_path = $this->clean_path( $route->getPath() );
+        $index_string = 'index.php?'.$this->route_variable.'='.$route->getName();
+        $route_args = array();
 
         preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
 
@@ -98,83 +101,54 @@ class Router
             if( count($pattern_array) >= 2) {
               $name = $pattern_array[0];
               $type = $pattern_array[1];
-              // $optional = ( isset($pattern_array[2]) && $pattern_array[2] === 'optional' ) ? '?' : '';
               $match_num = $key+1;
 
-              switch ($type) {
-                case 'number':
-                  $regex_path = str_replace($matches[0][$key], "([0-9]+)", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '([0-9]+)');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
+              $regex_code = $this->get_regex_by_type($type);
 
-                case 'word':
-                  $regex_path = str_replace($matches[0][$key], "([a-zA-Z]+)", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '([a-zA-Z]+)');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'date':
-                  $regex_path = str_replace($matches[0][$key], "(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'slug':
-                  $regex_path = str_replace($matches[0][$key], "([a-z0-9-]+)", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '([a-z0-9-]+)');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'digit':
-                  $regex_path = str_replace($matches[0][$key], "([0-9])", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '([0-9])');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'year':
-                  $regex_path = str_replace($matches[0][$key], "(\d{4})", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(\d{4})');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'month':
-                  $regex_path = str_replace($matches[0][$key], "(0[1-9]|1[0-2])", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(0[1-9]|1[0-2])');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'day':
-                  $regex_path = str_replace($matches[0][$key], "(0[1-9]|[12][0-9]|3[01])", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(0[1-9]|[12][0-9]|3[01])');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'jwt':
-                  $regex_path = str_replace($matches[0][$key], "((?:[\w-]*\.){2}[\w-]*)", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '((?:[\w-]*\.){2}[\w-]*)');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                case 'ip':
-                  $regex_path = str_replace($matches[0][$key], "(([0-9]{1,3}\.){3}[0-9]{1,3})", $regex_path);
-                  add_rewrite_tag('%'.$name.'%', '(([0-9]{1,3}\.){3}[0-9]{1,3})');
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-
-                default: //Allow custom regex
-                  $regex_path = str_replace($matches[0][$key], $type, $regex_path);
-                  add_rewrite_tag('%'.$name.'%', $type);
-                  $index_string .= "&$name=\$matches[$match_num]";
-                  break;
-              }
+              $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
+              add_rewrite_tag('%'.$name.'%', $regex_code);
+              $index_string .= "&$name=\$matches[$match_num]";
+              $route_args[] = $name;
             }
           }
         }
 
         $regex_path = '^'.$regex_path.'$';
         add_rewrite_rule($regex_path, $index_string, $position);
+        $route->setArgs($route_args);
     }
 
+    private function clean_path($path) {
+      return ltrim( trim($path), '/' );
+    }
+
+    private function get_regex_by_type($type) {
+
+      switch ($type) {
+        case 'number':
+          return '([0-9]+)';
+        case 'word':
+          return '([a-zA-Z]+)';
+        case 'date':
+          return '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
+        case 'slug':
+          return '([a-z0-9-]+)';
+        case 'digit':
+          return '([0-9])';
+        case 'year':
+          return '(\d{4})';
+        case 'month':
+          return '(0[1-9]|1[0-2])';
+        case 'day':
+          return '(0[1-9]|[12][0-9]|3[01])';
+        case 'jwt':
+          return '((?:[\w-]*\.){2}[\w-]*)';
+        case 'ip':
+          return '(([0-9]{1,3}\.){3}[0-9]{1,3})';
+        default: //Allow custom regex
+          return $type;
+      }
+
+    }
 
 }

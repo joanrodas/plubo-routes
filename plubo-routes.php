@@ -20,13 +20,37 @@ require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 PluboRoutes\PluboRoutesProcessor::init();
 
-// add_filter('plubo/routes', function($routes) {
-//   $routes[] = new PluboRoutes\Route('route_name', 'test/{year:number:optional}/{city:word}', 'template_path');
-//   return $routes;
-// });
+add_filter('plubo/routes', function($routes) {
 
-/* AVAILABLE ROUTE SYNTAX
-{variable_name:word}
-{variable_name:number}
-{variable_name:text}
-*/
+  $routes[] = new PluboRoutes\Route\Route(
+    'clients',
+    'client/{id:number}',
+    function($matches) {
+      //Do some stuff...
+      return locate_template( app('sage.finder')->locate('client') ); //SAGE 10 example
+    }
+  );
+
+  $routes[] = new PluboRoutes\Route\RedirectRoute(
+    'city/{city:word}',
+    function($matches) {
+      return 'https://google.com/search?s=' . $matches['city']; //SAGE 10 example
+    },
+    array(
+      'status' => 302,
+      'external' => true
+    )
+  );
+
+  $routes[] = new PluboRoutes\Route\ActionRoute(
+    'sendEmail',
+    function($matches) {
+      $to = get_option( 'admin_email' );
+      $subject = 'Hello world';
+      $message = 'Wow!';
+      $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+      wp_mail( $to, $subject, $message, $headers );
+    }
+  );
+  return $routes;
+});
