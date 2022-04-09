@@ -156,7 +156,7 @@ class Router
           $type = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
           break;
         default: //Allow custom regex
-          break
+          break;
       }
       return $type;
     }

@@ -34,7 +34,7 @@ add_filter('plubo/routes', function($routes) {
   $routes[] = new PluboRoutes\Route\RedirectRoute(
     'city/{city:word}',
     function($matches) {
-      return 'https://google.com/search?s=' . $matches['city']; //SAGE 10 example
+      return 'https://www.google.com/search?q=' . $matches['city']; //SAGE 10 example
     },
     array(
       'status' => 302,

@@ -5,7 +5,7 @@ namespace PluboRoutes\Route;
  * A Route describes a route and its parameters.
  *
  */
-final class ActionRoute implements RouteInterface
+final class ActionRoute implements RouteInterface, \Serializable
 {
 
     /**
@@ -111,6 +111,16 @@ final class ActionRoute implements RouteInterface
      */
     public function getArgs() {
       return $this->args;
+    }
+
+    public function serialize() {
+      return serialize( array($this->path, $this->args) );
+    }
+
+    public function unserialize($data) {
+      $data = unserialize($data);
+      $this->path = $data['path'];
+      $this->args = $data['args'];
     }
 
 }

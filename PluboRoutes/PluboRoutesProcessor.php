@@ -65,20 +65,18 @@ class PluboRoutesProcessor
      * Step 1: Register all our routes into WordPress. Flush rewrite rules if the routes changed.
      */
     public function add_routes() {
+      $routes = apply_filters('plubo/routes', array() );
+      foreach ($routes as $route) {
+        $this->router->add_route($route);
+      }
 
-        $routes = apply_filters('plubo/routes', array() );
-        foreach ($routes as $route) {
-          $this->router->add_route($route);
-        }
+      $this->router->compile();
 
-        $this->router->compile();
-
-        // die(print_r( json_encode($routes) ));
-        // $routes_hash = md5( $routes.toString() );
-        // if ($routes_hash != get_option('plubo-routes-hash')) {
-          flush_rewrite_rules(); //TODO: Alternativa
-          // update_option('plubo-routes-hash', $routes_hash);
-        // }
+      $routes_hash = md5( serialize($routes) );
+      if ($routes_hash != get_option('plubo-routes-hash')) {
+        flush_rewrite_rules();
+        update_option('plubo-routes-hash', $routes_hash);
+      }
     }
 
     /**
