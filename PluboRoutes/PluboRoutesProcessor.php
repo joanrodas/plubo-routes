@@ -57,7 +57,7 @@ class PluboRoutesProcessor
 
       add_action('init', array($self, 'add_routes'));
       add_action('parse_request', array($self, 'match_route_request'));
-      add_action('template_redirect', array($self, 'route_action'));
+      add_action('template_redirect', array($self, 'do_route_actions'));
       add_action('template_include', array($self, 'route_template_include'));
     }
 
@@ -106,36 +106,47 @@ class PluboRoutesProcessor
     /**
      * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
-    public function route_action() {
+    public function do_route_actions() {
 
       if ( $this->matched_route instanceof Route ) {
-        status_header( 200 );
-        do_action( $this->matched_route->getAction(), $this->matched_args );
+        $this->execute_route_hook();
       }
 
       else if ( $this->matched_route instanceof ActionRoute ) {
-        $action = $this->matched_route->getAction();
-        if( $this->matched_route->hasCallback() )
-          $action = call_user_func($action, $this->matched_args);
-        do_action( $action );
+        $this->execute_route_function();
       }
 
       else if ( $this->matched_route instanceof RedirectRoute ) {
-        $redirect_to = $this->matched_route->getAction();
-
-        if( $this->matched_route->hasCallback() )
-          $redirect_to = call_user_func($redirect_to, $this->matched_args);
-
-        nocache_headers();
-        if($this->matched_route->isExternal()) {
-          wp_redirect($redirect_to, $this->matched_route->getStatus());
-          exit;
-        }
-
-        wp_safe_redirect( home_url($redirect_to), $this->matched_route->getStatus() );
-        exit;
+        $this->execute_redirect();
       }
 
+    }
+
+    private function execute_route_hook() {
+      status_header( 200 );
+      do_action( $this->matched_route->getAction(), $this->matched_args );
+    }
+
+    private function execute_route_function() {
+      $action = $this->matched_route->getAction();
+      if( $this->matched_route->hasCallback() ) {
+        $action = call_user_func($action, $this->matched_args);
+      }
+      do_action( $action );
+    }
+
+    private function execute_redirect() {
+      $redirect_to = $this->matched_route->getAction();
+      if( $this->matched_route->hasCallback() ) {
+        $redirect_to = call_user_func($redirect_to, $this->matched_args);
+      }
+      nocache_headers();
+      if($this->matched_route->isExternal()) {
+        wp_redirect($redirect_to, $this->matched_route->getStatus());
+        exit;
+      }
+      wp_safe_redirect( home_url($redirect_to), $this->matched_route->getStatus() );
+      exit;
     }
 
     /**
