@@ -5,15 +5,9 @@ namespace PluboRoutes\Route;
  * A Route describes a route and its parameters.
  *
  */
-final class RedirectRoute implements RouteInterface, \Serializable
+final class RedirectRoute implements RouteInterface
 {
-
-    /**
-     * The URL path that the route needs to match.
-     *
-     * @var string
-     */
-    private $path;
+    use RouteTrait;
 
     /**
      * The action that the route wants to execute.
@@ -23,24 +17,10 @@ final class RedirectRoute implements RouteInterface, \Serializable
     private $action;
 
     /**
-     * The optional config of the route.
-     *
-     * @var array
-     */
-    private $config;
-
-    /**
-     * The matches of the route.
-     *
-     * @var array
-     */
-    private $args;
-
-    /**
      * Constructor.
      *
      * @param string $path
-     * @param string\callable $action
+     * @param string|callable $action
      * @param array $config
      */
     public function __construct(string $path, $action, array $config=[]) {
@@ -60,30 +40,12 @@ final class RedirectRoute implements RouteInterface, \Serializable
     }
 
     /**
-     * Get the path to be matched.
-     *
-     * @return string
-     */
-    public function getPath() {
-      return $this->path;
-    }
-
-    /**
      * Get the action to be called when this route is matched.
      *
      * @return string|callable
      */
     public function getAction() {
       return $this->action;
-    }
-
-    /**
-     * Get the config parameters of the route.
-     *
-     * @return array
-     */
-    public function getConfig() {
-      return $this->config;
     }
 
     /**
@@ -122,34 +84,6 @@ final class RedirectRoute implements RouteInterface, \Serializable
       $status = $this->config['status'] ?? 302;
       in_array((int)$status, range(300, 308), true) or $status = 302;
       return $status;
-    }
-
-    /**
-     * Set the matches of the route.
-     *
-     * @param array
-     */
-    public function setArgs($args) {
-      $this->args = $args;
-    }
-
-    /**
-     * Get the matches of the route.
-     *
-     * @return array
-     */
-    public function getArgs() {
-      return $this->args;
-    }
-
-    public function serialize() {
-      return serialize( array($this->path, $this->args) );
-    }
-
-    public function unserialize($data) {
-      $data = unserialize($data);
-      $this->path = $data['path'];
-      $this->args = $data['args'];
     }
 
 }

@@ -5,22 +5,16 @@ namespace PluboRoutes\Route;
  * A Route describes a route and its parameters.
  *
  */
-final class Route implements RouteInterface, \Serializable
+final class Route implements RouteInterface
 {
+    use RouteTrait;
 
     /**
      * The name of the route.
      *
      * @var string
-     */
-   private $name;
-
-    /**
-     * The URL path that the route needs to match.
-     *
-     * @var string
-     */
-    private $path;
+    */
+    private $name;
 
     /**
      * The template that the route wants to load or a callable.
@@ -28,20 +22,6 @@ final class Route implements RouteInterface, \Serializable
      * @var string\callable
      */
     private $template;
-
-    /**
-     * The optional config of the route.
-     *
-     * @var array
-     */
-    private $config;
-
-    /**
-     * The matches of the route.
-     *
-     * @var array
-     */
-    private $args;
 
     /**
      * Constructor.
@@ -69,30 +49,12 @@ final class Route implements RouteInterface, \Serializable
     }
 
     /**
-     * Get the path to be matched.
-     *
-     * @return string
-     */
-    public function getPath() {
-      return $this->path;
-    }
-
-    /**
      * Get the action to be executed when this route is matched.
      *
      * @return string
      */
     public function getAction() {
       return "plubo/route_{$this->getName()}";
-    }
-
-    /**
-     * Get the config parameters of the route.
-     *
-     * @return array
-     */
-    public function getConfig() {
-      return $this->config;
     }
 
     /**
@@ -120,34 +82,6 @@ final class Route implements RouteInterface, \Serializable
      */
     public function getTemplate() {
       return $this->template;
-    }
-
-    /**
-     * Set the matches of the route.
-     *
-     * @param array
-     */
-    public function setArgs($args) {
-      $this->args = $args;
-    }
-
-    /**
-     * Get the matches of the route.
-     *
-     * @return array
-     */
-    public function getArgs() {
-      return $this->args;
-    }
-
-    public function serialize() {
-      return serialize( array($this->path, $this->args) );
-    }
-
-    public function unserialize($data) {
-      $data = unserialize($data);
-      $this->path = $data['path'];
-      $this->args = $data['args'];
     }
 
 }
