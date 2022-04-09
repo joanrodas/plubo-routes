@@ -6,7 +6,7 @@ use PluboRoutes\Router;
 use PluboRoutes\Route\Route;
 use PluboRoutes\Route\RedirectRoute;
 use PluboRoutes\Route\ActionRoute;
-
+use PluboRoutes\Route\RouteInterface;
 
 /**
  * The Processor is in charge of the interaction between the routing system and
@@ -87,20 +87,20 @@ class PluboRoutesProcessor
      * @param WP $wp
      */
     public function match_route_request(\WP $wp) {
-      $all_query_vars = $wp->query_vars;
-      $matched_args = array();
-      $matched_route = $this->router->match($all_query_vars);
+      $matched_route = $this->router->match($wp->query_vars);
 
-      if ($matched_route instanceof Route || $matched_route instanceof RedirectRoute || $matched_route instanceof ActionRoute) {
+      if ($matched_route instanceof RouteInterface) {
+        $matched_args = array();
         $args_names = $matched_route->getArgs();
         foreach ($args_names as $arg_name) {
-          $matched_args[$arg_name] = $all_query_vars[$arg_name] ?? false;
+          $matched_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
         }
-        $this->matched_route =  apply_filters( 'plubo/matched_route', $matched_route, $matched_args );
+        $this->matched_route =  $matched_route;
         $this->matched_args = $matched_args;
       }
 
-      if ($matched_route instanceof \WP_Error && in_array('route_not_found', $matched_route->get_error_codes())) {
+      if ($matched_route instanceof \WP_Error &&
+        in_array('route_not_found', $matched_route->get_error_codes())) {
           wp_die($matched_route, 'Route Not Found', array('response' => 404));
       }
     }
@@ -114,28 +114,22 @@ class PluboRoutesProcessor
         do_action( $this->matched_route->getAction(), $this->matched_args );
       }
       else if ( $this->matched_route instanceof ActionRoute ) {
-        // status_header( 200 );
-        // $status = $this->matched_route->getStatus();
-        $isCallable = $this->matched_route->hasCallback();
+        $is_callable = $this->matched_route->hasCallback();
         $action = $this->matched_route->getAction();
-        if($isCallable) $action = call_user_func( $action, $this->matched_args );
+        if($is_callable) $action = call_user_func( $action, $this->matched_args );
         do_action( $action );
       }
       else if ( $this->matched_route instanceof RedirectRoute ) {
         $status = $this->matched_route->getStatus();
-        $isCallable = $this->matched_route->hasCallback();
+        $is_callable = $this->matched_route->hasCallback();
         $redirect_to = $this->matched_route->getAction();
 
-        if($isCallable) $redirect_to = call_user_func( $redirect_to, $this->matched_args );
+        if($is_callable)
+          $redirect_to = call_user_func( $redirect_to, $this->matched_args );
 
-        if($this->matched_route->isExternal()) {
-          wp_redirect($redirect_to, $status);
-          die;
-        }
-        else {
-          wp_safe_redirect( home_url($redirect_to), $status );
-          exit;
-        }
+        if($this->matched_route->isExternal()) wp_redirect($redirect_to, $status);
+        else wp_safe_redirect( home_url($redirect_to), $status );
+        die;
       }
     }
 
