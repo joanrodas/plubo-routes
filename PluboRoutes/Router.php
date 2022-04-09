@@ -126,29 +126,39 @@ class Router
 
       switch ($type) {
         case 'number':
-          return '([0-9]+)';
+          $type = '([0-9]+)';
+          break;
         case 'word':
-          return '([a-zA-Z]+)';
+          $type = '([a-zA-Z]+)';
+          break;
         case 'date':
-          return '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
+          $type = '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
+          break;
         case 'slug':
-          return '([a-z0-9-]+)';
+          $type = '([a-z0-9-]+)';
+          break;
         case 'digit':
-          return '([0-9])';
+          $type = '([0-9])';
+          break;
         case 'year':
-          return '(\d{4})';
+          $type = '(\d{4})';
+          break;
         case 'month':
-          return '(0[1-9]|1[0-2])';
+          $type = '(0[1-9]|1[0-2])';
+          break;
         case 'day':
-          return '(0[1-9]|[12][0-9]|3[01])';
+          $type = '(0[1-9]|[12][0-9]|3[01])';
+          break;
         case 'jwt':
-          return '((?:[\w-]*\.){2}[\w-]*)';
+          $type = '((?:[\w-]*\.){2}[\w-]*)';
+          break;
         case 'ip':
-          return '(([0-9]{1,3}\.){3}[0-9]{1,3})';
+          $type = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
+          break;
         default: //Allow custom regex
-          return $type;
+          break
       }
-
+      return $type;
     }
 
 }
