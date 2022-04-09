@@ -88,8 +88,7 @@ class Router
       $regex_path = $this->clean_path( $route->getPath() );
       $index_string = 'index.php?'.$this->route_variable.'='.$route->getName();
       $route_args = array();
-      preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
-      if( isset($matches[1]) ) {
+      if( preg_match_all('#\{(.+?)\}#', $regex_path, $matches) ) {
         $patterns = $matches[1];
         foreach ($patterns as $key => $pattern) {
           $pattern_array = explode(':', $pattern);
