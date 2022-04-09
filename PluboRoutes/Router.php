@@ -118,36 +118,27 @@ class Router
     private function get_regex_by_type($type) {
       switch ($type) {
         case 'number':
-          $type = '([0-9]+)';
-          break;
+          return '([0-9]+)';
         case 'word':
-          $type = '([a-zA-Z]+)';
-          break;
+          return '([a-zA-Z]+)';
         case 'date':
-          $type = '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
-          break;
+          return '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
         case 'slug':
-          $type = '([a-z0-9-]+)';
-          break;
+          return '([a-z0-9-]+)';
         case 'digit':
-          $type = '([0-9])';
-          break;
+          return '([0-9])';
         case 'year':
-          $type = '(\d{4})';
-          break;
+          return '(\d{4})';
         case 'month':
-          $type = '(0[1-9]|1[0-2])';
-          break;
+          return '(0[1-9]|1[0-2])';
         case 'day':
-          $type = '(0[1-9]|[12][0-9]|3[01])';
-          break;
+          return '(0[1-9]|[12][0-9]|3[01])';
         case 'jwt':
-          $type = '((?:[\w-]*\.){2}[\w-]*)';
-          break;
+          return '((?:[\w-]*\.){2}[\w-]*)';
         case 'ip':
-          $type = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
-      } //Default: Allow custom regex
-      return $type;
+          return '(([0-9]{1,3}\.){3}[0-9]{1,3})';
+      }
+      return $type; //Allow custom regex
     }
 
 }
