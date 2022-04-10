@@ -86,28 +86,23 @@ class Router
      * @param string $position
      */
     private function add_rule(RouteInterface $route, $position = 'top') {
-      $regex_path = $this->clean_path( $route->getPath() );
+      $regex_path = ltrim( trim( $route->getPath() ), '/' );
       $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
       if( preg_match_all('#\{(.+?)\}#', $regex_path, $matches) ) {
         $patterns = $matches[1];
         foreach ($patterns as $key => $pattern) {
           $pattern = explode(':', $pattern);
-          if( count($pattern) >= 2) {
-            $name = $pattern[0];
-            $num_arg = $key+1;
-            $regex_code = RegexHelper::getRegex( $pattern[1] );
-            $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
-            add_rewrite_tag("%$name%", $regex_code);
-            $index_string .= "&$name=\$matches[$num_arg]";
-            $route->addArg($name);
-          }
+          if(count($pattern) < 2) continue;
+          $name = $pattern[0];
+          $num_arg = $key+1;
+          $regex_code = RegexHelper::getRegex( $pattern[1] );
+          $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
+          add_rewrite_tag("%$name%", $regex_code);
+          $index_string .= "&$name=\$matches[$num_arg]";
+          $route->addArg($name);
         }
       }
       add_rewrite_rule("^$regex_path$", $index_string, $position);
-    }
-
-    private function clean_path($path) {
-      return ltrim( trim($path), '/' );
     }
 
 }
