@@ -58,15 +58,6 @@ final class RedirectRoute implements RouteInterface
     }
 
     /**
-     * Get the hook called when this route is matched.
-     *
-     * @return string
-     */
-    public function getHook() {
-      return "plubo/route_{$this->getName()}";
-    }
-
-    /**
      * Check if the action is a callable.
      *
      * @return boolean
