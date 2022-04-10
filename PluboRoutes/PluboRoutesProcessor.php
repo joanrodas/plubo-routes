@@ -108,11 +108,9 @@ class PluboRoutesProcessor
     {
         if ($this->matched_route instanceof Route) {
             $this->executeRouteHook();
-        }
-        else if ($this->matched_route instanceof ActionRoute) {
+        } elseif ($this->matched_route instanceof ActionRoute) {
             $this->executeRouteFunction();
-        }
-        else if ($this->matched_route instanceof RedirectRoute) {
+        } elseif ($this->matched_route instanceof RedirectRoute) {
             $this->executeRedirect();
         }
     }
@@ -126,7 +124,7 @@ class PluboRoutesProcessor
     private function executeRouteFunction()
     {
         $action = $this->matched_route->getAction();
-        if($this->matched_route->hasCallback()) {
+        if ($this->matched_route->hasCallback()) {
             $action = call_user_func($action, $this->matched_args);
         }
     }
@@ -134,11 +132,11 @@ class PluboRoutesProcessor
     private function executeRedirect()
     {
         $redirect_to = $this->matched_route->getAction();
-        if($this->matched_route->hasCallback()) {
+        if ($this->matched_route->hasCallback()) {
             $redirect_to = call_user_func($redirect_to, $this->matched_args);
         }
         nocache_headers();
-        if($this->matched_route->isExternal()) {
+        if ($this->matched_route->isExternal()) {
             wp_redirect($redirect_to, $this->matched_route->getStatus());
             exit;
         }
@@ -155,8 +153,10 @@ class PluboRoutesProcessor
      */
     public function includeRouteTemplate($template)
     {
-        if (!$this->matched_route instanceof Route) {return $template;}
-        if($this->matched_route->hasTemplateCallback()) {
+        if (!$this->matched_route instanceof Route) {
+          return $template;
+        }
+        if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
             $template = call_user_func($template_func, $this->matched_args);
         }

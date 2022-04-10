@@ -5,7 +5,8 @@ namespace PluboRoutes\Route;
  * Common route functions.
  *
  */
-trait RouteTrait {
+trait RouteTrait
+{
 
     /**
      * The URL path that the route needs to match.

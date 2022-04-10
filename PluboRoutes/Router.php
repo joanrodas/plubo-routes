@@ -49,10 +49,10 @@ class Router
      */
     public function compile()
     {
-      add_rewrite_tag('%'.$this->route_variable.'%', '(.+)');
-      foreach ($this->routes as $route) {
-          $this->addRule($route);
-      }
+        add_rewrite_tag('%'.$this->route_variable.'%', '(.+)');
+        foreach ($this->routes as $route) {
+            $this->addRule($route);
+        }
     }
 
     /**
@@ -108,5 +108,4 @@ class Router
     {
         return ltrim(trim($path), '/');
     }
-
 }
