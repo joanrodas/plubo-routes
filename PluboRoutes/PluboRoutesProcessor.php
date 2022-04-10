@@ -159,8 +159,7 @@ class PluboRoutesProcessor
         if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
             $template = call_user_func($template_func, $this->matched_args);
-        }
-        else {
+        } else {
             $template = apply_filters('plubo/template', locate_template($this->matched_route->getTemplate()));
         }
         return $template;
