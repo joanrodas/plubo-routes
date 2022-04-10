@@ -117,7 +117,7 @@ class PluboRoutesProcessor
 
     private function executeRouteHook()
     {
-        status_header( 200 );
+        status_header(200);
         do_action($this->matched_route->getAction(), $this->matched_args);
     }
 
@@ -154,7 +154,7 @@ class PluboRoutesProcessor
     public function includeRouteTemplate($template)
     {
         if (!$this->matched_route instanceof Route) {
-          return $template;
+            return $template;
         }
         if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();

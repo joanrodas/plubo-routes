@@ -70,7 +70,9 @@ class Router
         }
         $route_name = $query_variables[$this->route_variable];
         foreach ($this->routes as $key => $route) {
-            if($route->getName() === $route_name) {return $route;}
+            if ($route->getName() === $route_name) {
+                return $route;
+            }
         }
         return new \WP_Error('route_not_found');
     }
@@ -85,20 +87,19 @@ class Router
     {
         $regex_path = $this->cleanPath($route->getPath());
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if( preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
+        if (preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
             $patterns = $matches[1];
             foreach ($patterns as $key => $pattern) {
                 $pattern = explode(':', $pattern);
-                if(count($pattern) < 2) {
-                    continue;
+                if (count($pattern) > 1) {
+                    $name = $pattern[0];
+                    $num_arg = $key+1;
+                    $regex_code = RegexHelper::getRegex($pattern[1]);
+                    $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
+                    add_rewrite_tag("%$name%", $regex_code);
+                    $index_string .= "&$name=\$matches[$num_arg]";
+                    $route->addArg($name);
                 }
-                $name = $pattern[0];
-                $num_arg = $key+1;
-                $regex_code = RegexHelper::getRegex($pattern[1]);
-                $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
-                add_rewrite_tag("%$name%", $regex_code);
-                $index_string .= "&$name=\$matches[$num_arg]";
-                $route->addArg($name);
             }
         }
         add_rewrite_rule("^$regex_path$", $index_string, $position);

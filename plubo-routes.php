@@ -42,7 +42,7 @@ add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\ActionRoute(
         'sendEmail',
         function () {
-            $to = get_option( 'admin_email' );
+            $to = get_option('admin_email');
             $subject = 'Hello world';
             $message = 'Wow!';
             $headers = array('Content-Type: text/html; charset=UTF-8');
