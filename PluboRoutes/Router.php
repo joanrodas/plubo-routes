@@ -87,9 +87,8 @@ class Router
     {
         $regex_path = $this->cleanPath($route->getPath());
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if (preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
-            $patterns = $matches[1];
-            foreach ($patterns as $key => $pattern) {
+        if ($matches = $this->getMatches($regex_path)) {
+            foreach ($matches[1] as $key => $pattern) {
                 $pattern = explode(':', $pattern);
                 if (count($pattern) > 1) {
                     $name = $pattern[0];
@@ -108,5 +107,11 @@ class Router
     private function cleanPath($path)
     {
         return ltrim(trim($path), '/');
+    }
+
+    private function getMatches($regex_path)
+    {
+        preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
+        return $matches;
     }
 }
