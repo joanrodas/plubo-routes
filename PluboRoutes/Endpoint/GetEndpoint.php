@@ -16,7 +16,7 @@ final class GetEndpoint implements EndpointInterface
      * @param string $path
      * @param callable $config
      */
-    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = NULL)
+    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null)
     {
         $this->namespace = $namespace;
         $this->path = $path;
@@ -27,6 +27,6 @@ final class GetEndpoint implements EndpointInterface
 
     public function getMethod()
     {
-      return \WP_REST_Server::READABLE;
+        return \WP_REST_Server::READABLE;
     }
 }
