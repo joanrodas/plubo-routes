@@ -10,6 +10,6 @@ interface EndpointInterface extends \Serializable
     public function getNamespace();
     public function getPath();
     public function getConfig();
-    public function addArg($arg);
-    public function getArgs();
+    public function getPermissionCallback();
+    public function getMethod();
 }

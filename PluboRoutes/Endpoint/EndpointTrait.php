@@ -30,6 +30,13 @@ trait EndpointTrait
     private $config;
 
     /**
+     * The permission callback of the endpoint.
+     *
+     * @var array
+     */
+    private $permission_callback;
+
+    /**
      * The matches of the endpoint.
      *
      * @var array
@@ -43,7 +50,7 @@ trait EndpointTrait
      */
     public function getNamespace()
     {
-        return $this->path;
+        return $this->namespace;
     }
 
     /**
@@ -67,23 +74,13 @@ trait EndpointTrait
     }
 
     /**
-     * Set the matches of the endpoint.
+     * Get the endpoint permission callback.
      *
-     * @param array
+     * @return callable
      */
-    public function addArg($arg)
+    public function getPermissionCallback()
     {
-        $this->args[] = $arg;
-    }
-
-    /**
-     * Get the matches of the endpoint.
-     *
-     * @return array
-     */
-    public function getArgs()
-    {
-        return $this->args;
+        return $this->permission_callback;
     }
 
     /**

@@ -51,3 +51,15 @@ add_filter('plubo/routes', function ($routes) {
     );
     return $routes;
 });
+
+add_filter('plubo/endpoints', function ($endpoints) {
+    $endpoints[] = new PluboRoutes\Endpoint\GetEndpoint(
+        'plubo/v1',
+        'client/{client_id:number}',
+        function ($request) {
+            $params = $request->get_params();
+            return array('client', $params['client_id']);
+        }
+    );
+    return $endpoints;
+});

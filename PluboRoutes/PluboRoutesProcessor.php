@@ -57,6 +57,7 @@ class PluboRoutesProcessor
         $self = new self(new Router());
         add_action('init', array($self, 'addRoutes'));
         add_action('parse_request', array($self, 'matchRouteRequest'));
+        add_action('rest_api_init', array($self, 'addEndpoints'));
         add_action('template_redirect', array($self, 'doRouteActions'));
         add_action('template_include', array($self, 'includeRouteTemplate'));
     }
@@ -70,11 +71,28 @@ class PluboRoutesProcessor
         foreach ($routes as $route) {
             $this->router->addRoute($route);
         }
-        $this->router->compile();
+        $this->router->compileRoutes();
         $routes_hash = md5(serialize($routes));
         if ($routes_hash != get_option('plubo-routes-hash')) {
             flush_rewrite_rules();
             update_option('plubo-routes-hash', $routes_hash);
+        }
+    }
+
+    /**
+     * Step 1 alt: Register all our endpoints into WordPress. Flush rewrite rules if the endpoints changed.
+     */
+    public function addEndpoints()
+    {
+        $endpoints = apply_filters('plubo/endpoints', array());
+        foreach ($endpoints as $endpoint) {
+            $this->router->addEndpoint($endpoint);
+        }
+        $this->router->compileEndpoints();
+        $endpoints_hash = md5(serialize($endpoints));
+        if ($endpoints_hash != get_option('plubo-endpoints-hash')) {
+            flush_rewrite_rules();
+            update_option('plubo-endpoints-hash', $endpoints_hash);
         }
     }
 
