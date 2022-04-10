@@ -2,12 +2,11 @@
 namespace PluboRoutes\Endpoint;
 
 /**
- * Common endpoint functions.
+ * An Endpoint describes a route and its parameters.
  *
  */
-trait EndpointTrait
+class Endpoint implements EndpointInterface
 {
-
     /**
      * The endpoint namespace.
      *
@@ -37,11 +36,29 @@ trait EndpointTrait
     private $permission_callback;
 
     /**
-     * The matches of the endpoint.
+     * The method of the endpoint.
      *
-     * @var array
+     * @var string
      */
-    private $args;
+    private $method;
+
+    /**
+     * Constructor.
+     *
+     * @param string $namespace
+     * @param string $path
+     * @param callable $config
+     * @param string $method
+     */
+    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null, $method = \WP_REST_Server::READABLE)
+    {
+        $this->namespace = $namespace;
+        $this->path = $path;
+        $this->config = $config;
+        $this->permission_callback = $permission_callback ?? '__return_true';
+        $this->args = array();
+        $this->method = $method;
+    }
 
     /**
      * Get the namespace of the endpoint.
@@ -74,6 +91,16 @@ trait EndpointTrait
     }
 
     /**
+     * Get the method of the endpoint.
+     *
+     * @return string
+     */
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    /**
      * Get the endpoint permission callback.
      *
      * @return callable
@@ -90,7 +117,7 @@ trait EndpointTrait
      */
     public function serialize()
     {
-        return serialize(array($this->path, $this->args));
+        return serialize(array($this->path, $this->method));
     }
 
     /**
@@ -102,6 +129,6 @@ trait EndpointTrait
     {
         $data = unserialize($data);
         $this->path = $data['path'];
-        $this->args = $data['args'];
+        $this->method = $data['method'];
     }
 }

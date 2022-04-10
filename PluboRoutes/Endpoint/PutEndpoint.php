@@ -2,13 +2,11 @@
 namespace PluboRoutes\Endpoint;
 
 /**
- * An Endpoint describes a route and its parameters.
+ * An Endpoint with PUT method.
  *
  */
-final class PutEndpoint implements EndpointInterface
+final class PutEndpoint extends Endpoint
 {
-    use EndpointTrait;
-
     /**
      * Constructor.
      *
@@ -18,15 +16,6 @@ final class PutEndpoint implements EndpointInterface
      */
     public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null)
     {
-        $this->namespace = $namespace;
-        $this->path = $path;
-        $this->config = $config;
-        $this->permission_callback = $permission_callback ?? '__return_true';
-        $this->args = array();
-    }
-
-    public function getMethod()
-    {
-        return 'PUT';
+        parent::__construct($namespace, $path, $config, $permission_callback, 'PUT');
     }
 }
