@@ -2,6 +2,7 @@
 namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
+use PluboRoutes\Helpers\RegexHelper;
 
 /**
  * The Router manages routes using the WordPress rewrite API.
@@ -86,32 +87,27 @@ class Router
      */
     private function add_rule(RouteInterface $route, $position = 'top') {
       $regex_path = $this->clean_path( $route->getPath() );
-      $index_string = 'index.php?'.$this->route_variable.'='.$route->getName();
+      $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
       if( preg_match_all('#\{(.+?)\}#', $regex_path, $matches) ) {
         $patterns = $matches[1];
         foreach ($patterns as $key => $pattern) {
-          $pattern_array = explode(':', $pattern);
-          if( count($pattern_array) >= 2) {
-            $name = $pattern_array[0];
-            $match_num = $key+1;
-            $regex_code = $this->get_regex_by_type($pattern_array[1]);
+          $pattern = explode(':', $pattern);
+          if( count($pattern) >= 2) {
+            $name = $pattern[0];
+            $num_arg = $key+1;
+            $regex_code = RegexHelper::getRegex( $pattern[1] );
             $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
-            add_rewrite_tag('%'.$name.'%', $regex_code);
-            $index_string .= "&$name=\$matches[$match_num]";
+            add_rewrite_tag("%$name%", $regex_code);
+            $index_string .= "&$name=\$matches[$num_arg]";
             $route->addArg($name);
           }
         }
       }
       add_rewrite_rule("^$regex_path$", $index_string, $position);
-
     }
 
     private function clean_path($path) {
       return ltrim( trim($path), '/' );
-    }
-
-    private function get_regex_by_type($type) {
-      return Helpers\RegexHelper::getRegex($type);
     }
 
 }
