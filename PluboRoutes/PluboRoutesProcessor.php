@@ -107,10 +107,9 @@ class PluboRoutesProcessor
      * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
     public function do_route_actions() {
-      $route = $this->matched_route;
-      if ($route instanceof Route) $this->execute_route_hook();
-      else if ($route instanceof ActionRoute) $this->execute_route_function();
-      else if ($route instanceof RedirectRoute) $this->execute_redirect();
+      if ($this->matched_route instanceof Route) $this->execute_route_hook();
+      else if ($this->matched_route instanceof ActionRoute) $this->execute_route_function();
+      else if ($this->matched_route instanceof RedirectRoute) $this->execute_redirect();
     }
 
     private function execute_route_hook() {
