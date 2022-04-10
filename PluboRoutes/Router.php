@@ -69,7 +69,7 @@ class Router
             return new \WP_Error('missing_route_variable');
         }
         $route_name = $query_variables[$this->route_variable];
-        foreach ($this->routes as $key => $route) {
+        foreach ($this->routes as $route) {
             if ($route->getName() === $route_name) {
                 return $route;
             }
@@ -87,7 +87,7 @@ class Router
     {
         $regex_path = $this->cleanPath($route->getPath());
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if ($matches = $this->getMatches($regex_path)) {
+        if (preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
             foreach ($matches[1] as $key => $pattern) {
                 $pattern = explode(':', $pattern);
                 if (count($pattern) > 1) {
@@ -107,11 +107,5 @@ class Router
     private function cleanPath($path)
     {
         return ltrim(trim($path), '/');
-    }
-
-    private function getMatches($regex_path)
-    {
-        preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
-        return $matches;
     }
 }

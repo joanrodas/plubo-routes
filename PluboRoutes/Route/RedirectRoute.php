@@ -75,7 +75,7 @@ final class RedirectRoute implements RouteInterface
     /**
      * Check if the action is a callable.
      *
-     * @return boolean
+     * @return int
      */
     public function getStatus()
     {
