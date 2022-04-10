@@ -54,7 +54,7 @@ class PluboRoutesProcessor
      */
     public static function init()
     {
-        $self = new self( new Router() );
+        $self = new self(new Router());
         add_action('init', array($self, 'addRoutes'));
         add_action('parse_request', array($self, 'matchRouteRequest'));
         add_action('template_redirect', array($self, 'doRouteActions'));
@@ -85,20 +85,19 @@ class PluboRoutesProcessor
      */
     public function matchRouteRequest(\WP $wp)
     {
-        $matched_route = $this->router->match($wp->query_vars);
-        if ($matched_route instanceof RouteInterface) {
-            $matched_args = array();
-            $args_names = $matched_route->getArgs();
+        $found_route = $this->router->match($wp->query_vars);
+        if ($found_route instanceof RouteInterface) {
+            $found_args = array();
+            $args_names = $found_route->getArgs();
             foreach ($args_names as $arg_name) {
-                $matched_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
+                $found_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
             }
-            $this->matched_route =  $matched_route;
-            $this->matched_args = $matched_args;
+            $this->matched_route =  $found_route;
+            $this->matched_args = $found_args;
         }
-
-        if ($matched_route instanceof \WP_Error &&
-          in_array('route_not_found', $matched_route->get_error_codes())) {
-            wp_die($matched_route, 'Route Not Found', array('response' => 404));
+        if ($found_route instanceof \WP_Error &&
+          in_array('route_not_found', $found_route->get_error_codes())) {
+            wp_die($found_route, 'Route Not Found', array('response' => 404));
         }
     }
 
@@ -121,13 +120,13 @@ class PluboRoutesProcessor
     private function executeRouteHook()
     {
         status_header( 200 );
-        do_action( $this->matched_route->getAction(), $this->matched_args );
+        do_action($this->matched_route->getAction(), $this->matched_args);
     }
 
     private function executeRouteFunction()
     {
         $action = $this->matched_route->getAction();
-        if( $this->matched_route->hasCallback() ) {
+        if($this->matched_route->hasCallback()) {
             $action = call_user_func($action, $this->matched_args);
         }
     }
@@ -156,12 +155,14 @@ class PluboRoutesProcessor
      */
     public function includeRouteTemplate($template)
     {
-        if ( !$this->matched_route instanceof Route ) return $template;
+        if (!$this->matched_route instanceof Route) {return $template;}
         if($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
-            $template = call_user_func( $template_func, $this->matched_args );
+            $template = call_user_func($template_func, $this->matched_args);
         }
-        else $template = apply_filters( 'plubo/template', locate_template( $this->matched_route->getTemplate() ) );
+        else {
+            $template = apply_filters('plubo/template', locate_template($this->matched_route->getTemplate()));
+        }
         return $template;
     }
 }

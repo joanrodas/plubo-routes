@@ -23,7 +23,7 @@ final class ActionRoute implements RouteInterface
      * @param string|callable $action
      * @param array $config
      */
-    public function __construct(string $path, $action, array $config=[])
+    public function __construct(string $path, $action, array $config = [])
     {
         $this->path = $path;
         $this->action = $action;

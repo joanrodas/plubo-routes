@@ -31,7 +31,7 @@ final class Route implements RouteInterface
      * @param string|callable $template
      * @param array $config
      */
-    public function __construct(string $name, string $path, $template, array $config=[])
+    public function __construct(string $name, string $path, $template, array $config = [])
     {
         $this->name = $name;
         $this->path = $path;

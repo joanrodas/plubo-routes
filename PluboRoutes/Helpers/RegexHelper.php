@@ -15,22 +15,21 @@ class RegexHelper
     const SLUG = '([a-z0-9-]+)';
     const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
-    private static $available_regex = array(
-        'number' => self::NUMBER,
-        'word' => self::WORD,
-        'date' => self::DATE,
-        'slug' => self::SLUG,
-        'digit' => self::DIGIT,
-        'year' => self::YEAR,
-        'month' => self::MONTH,
-        'day' => self::DAY,
-        'jwt' => self::JWT,
-        'email' => self::EMAIL,
-        'ip' => self::IP
-    );
-
     public static function getRegex($type)
     {
-        return in_array($type, RegexHelper::$available_regex) ? $available_regex[$type] : $type;
+        $available_regex = array(
+            'number' => self::NUMBER,
+            'word' => self::WORD,
+            'date' => self::DATE,
+            'slug' => self::SLUG,
+            'digit' => self::DIGIT,
+            'year' => self::YEAR,
+            'month' => self::MONTH,
+            'day' => self::DAY,
+            'jwt' => self::JWT,
+            'email' => self::EMAIL,
+            'ip' => self::IP
+        );
+        return array_key_exists($type, $available_regex) ? $available_regex[$type] : $type;
     }
 }

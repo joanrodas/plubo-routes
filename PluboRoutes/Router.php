@@ -106,7 +106,7 @@ class Router
 
     private function cleanPath($path)
     {
-        return ltrim( trim($path), '/' );
+        return ltrim(trim($path), '/');
     }
 
 }

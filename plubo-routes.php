@@ -24,8 +24,8 @@ add_filter('plubo/routes', function($routes) {
 
   $routes[] = new PluboRoutes\Route\Route(
     'clients',
-    'client/{id:number}',
-    function($matches) {
+    'client/{client_id:number}',
+    function () {
       //Do some stuff...
       return locate_template( app('sage.finder')->locate('client') ); //SAGE 10 example
     }
@@ -33,7 +33,7 @@ add_filter('plubo/routes', function($routes) {
 
   $routes[] = new PluboRoutes\Route\RedirectRoute(
     'city/{city:word}',
-    function($matches) {
+    function ($matches) {
       return 'https://www.google.com/search?q=' . $matches['city']; //SAGE 10 example
     },
     array(
@@ -44,7 +44,7 @@ add_filter('plubo/routes', function($routes) {
 
   $routes[] = new PluboRoutes\Route\ActionRoute(
     'sendEmail',
-    function($matches) {
+    function () {
       $to = get_option( 'admin_email' );
       $subject = 'Hello world';
       $message = 'Wow!';
