@@ -35,8 +35,8 @@ add_filter('plubo/routes', function ($routes) {
             return 'https://www.google.com/search?q=' . $matches['city']; //SAGE 10 example
         },
         array(
-            'status' => 302,
-            'external' => true
+            'status' => 302, //Default 301
+            'external' => true //Default false
         )
     );
     $routes[] = new PluboRoutes\Route\ActionRoute(

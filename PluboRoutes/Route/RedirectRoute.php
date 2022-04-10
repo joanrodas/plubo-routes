@@ -68,7 +68,8 @@ final class RedirectRoute implements RouteInterface
      */
     public function isExternal()
     {
-        return empty($this->config['external']) ? false : filter_var($this->config['external'], FILTER_VALIDATE_BOOLEAN);
+        $is_external = $this->config['external'] ?? false;
+        return filter_var($is_external, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -78,8 +79,8 @@ final class RedirectRoute implements RouteInterface
      */
     public function getStatus()
     {
-        $status = $this->config['status'] ?? 302;
-        in_array((int)$status, range(300, 308), true) or $status = 302;
+        $status = $this->config['status'] ?? 301;
+        in_array((int)$status, range(300, 308), true) or $status = 301;
         return $status;
     }
 }
