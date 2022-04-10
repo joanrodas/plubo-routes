@@ -23,11 +23,12 @@ final class RedirectRoute implements RouteInterface
      * @param string|callable $action
      * @param array $config
      */
-    public function __construct(string $path, $action, array $config=[]) {
-      $this->path = $path;
-      $this->action = $action;
-      $this->config = $config;
-      $this->args = array();
+    public function __construct(string $path, $action, array $config=[])
+    {
+        $this->path = $path;
+        $this->action = $action;
+        $this->config = $config;
+        $this->args = array();
     }
 
     /**
@@ -35,8 +36,9 @@ final class RedirectRoute implements RouteInterface
      *
      * @return string
      */
-    public function getName() {
-      return md5($this->path);
+    public function getName()
+    {
+        return md5($this->path);
     }
 
     /**
@@ -44,8 +46,9 @@ final class RedirectRoute implements RouteInterface
      *
      * @return string|callable
      */
-    public function getAction() {
-      return $this->action;
+    public function getAction()
+    {
+        return $this->action;
     }
 
     /**
@@ -53,8 +56,9 @@ final class RedirectRoute implements RouteInterface
      *
      * @return boolean
      */
-    public function hasCallback() {
-      return is_callable($this->action);
+    public function hasCallback()
+    {
+        return is_callable($this->action);
     }
 
     /**
@@ -62,8 +66,9 @@ final class RedirectRoute implements RouteInterface
      *
      * @return boolean
      */
-    public function isExternal() {
-      return empty($this->config['external']) ? false : filter_var($this->config['external'], FILTER_VALIDATE_BOOLEAN);
+    public function isExternal()
+    {
+        return empty($this->config['external']) ? false : filter_var($this->config['external'], FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -71,10 +76,10 @@ final class RedirectRoute implements RouteInterface
      *
      * @return boolean
      */
-    public function getStatus() {
-      $status = $this->config['status'] ?? 302;
-      in_array((int)$status, range(300, 308), true) or $status = 302;
-      return $status;
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 302;
+        in_array((int)$status, range(300, 308), true) or $status = 302;
+        return $status;
     }
-
 }

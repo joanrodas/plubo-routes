@@ -23,11 +23,12 @@ final class ActionRoute implements RouteInterface
      * @param string|callable $action
      * @param array $config
      */
-    public function __construct(string $path, $action, array $config=[]) {
-      $this->path = $path;
-      $this->action = $action;
-      $this->config = $config;
-      $this->args = array();
+    public function __construct(string $path, $action, array $config=[])
+    {
+        $this->path = $path;
+        $this->action = $action;
+        $this->config = $config;
+        $this->args = array();
     }
 
     /**
@@ -35,8 +36,9 @@ final class ActionRoute implements RouteInterface
      *
      * @return string
      */
-    public function getName() {
-      return md5($this->path);
+    public function getName()
+    {
+        return md5($this->path);
     }
 
     /**
@@ -44,8 +46,9 @@ final class ActionRoute implements RouteInterface
      *
      * @return string|callable
      */
-    public function getAction() {
-      return $this->action;
+    public function getAction()
+    {
+        return $this->action;
     }
 
     /**
@@ -53,8 +56,8 @@ final class ActionRoute implements RouteInterface
      *
      * @return boolean
      */
-    public function hasCallback() {
-      return is_callable($this->action);
+    public function hasCallback()
+    {
+        return is_callable($this->action);
     }
-
 }

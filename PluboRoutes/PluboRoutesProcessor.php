@@ -45,38 +45,37 @@ class PluboRoutesProcessor
      */
     public function __construct(Router $router)
     {
-      $this->router = $router;
+        $this->router = $router;
     }
 
     /**
      * Initialize processor with WordPress.
      *
      */
-    public static function init() {
-      $self = new self( new Router() );
-
-      add_action('init', array($self, 'add_routes'));
-      add_action('parse_request', array($self, 'match_route_request'));
-      add_action('template_redirect', array($self, 'do_route_actions'));
-      add_action('template_include', array($self, 'route_template_include'));
+    public static function init()
+    {
+        $self = new self( new Router() );
+        add_action('init', array($self, 'addRoutes'));
+        add_action('parse_request', array($self, 'matchRouteRequest'));
+        add_action('template_redirect', array($self, 'doRouteActions'));
+        add_action('template_include', array($self, 'includeRouteTemplate'));
     }
 
     /**
      * Step 1: Register all our routes into WordPress. Flush rewrite rules if the routes changed.
      */
-    public function add_routes() {
-      $routes = apply_filters('plubo/routes', array() );
-      foreach ($routes as $route) {
-        $this->router->add_route($route);
-      }
-
-      $this->router->compile();
-
-      $routes_hash = md5( serialize($routes) );
-      if ($routes_hash != get_option('plubo-routes-hash')) {
-        flush_rewrite_rules();
-        update_option('plubo-routes-hash', $routes_hash);
-      }
+    public function addRoutes()
+    {
+        $routes = apply_filters('plubo/routes', array());
+        foreach ($routes as $route) {
+            $this->router->addRoute($route);
+        }
+        $this->router->compile();
+        $routes_hash = md5(serialize($routes));
+        if ($routes_hash != get_option('plubo-routes-hash')) {
+            flush_rewrite_rules();
+            update_option('plubo-routes-hash', $routes_hash);
+        }
     }
 
     /**
@@ -84,64 +83,68 @@ class PluboRoutesProcessor
      *
      * @param WP $wp
      */
-    public function match_route_request(\WP $wp) {
-      $matched_route = $this->router->match($wp->query_vars);
-
-      if ($matched_route instanceof RouteInterface) {
-        $matched_args = array();
-        $args_names = $matched_route->getArgs();
-        foreach ($args_names as $arg_name) {
-          $matched_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
+    public function matchRouteRequest(\WP $wp)
+    {
+        $matched_route = $this->router->match($wp->query_vars);
+        if ($matched_route instanceof RouteInterface) {
+            $matched_args = array();
+            $args_names = $matched_route->getArgs();
+            foreach ($args_names as $arg_name) {
+                $matched_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
+            }
+            $this->matched_route =  $matched_route;
+            $this->matched_args = $matched_args;
         }
-        $this->matched_route =  $matched_route;
-        $this->matched_args = $matched_args;
-      }
 
-      if ($matched_route instanceof \WP_Error &&
-        in_array('route_not_found', $matched_route->get_error_codes())) {
-          wp_die($matched_route, 'Route Not Found', array('response' => 404));
-      }
+        if ($matched_route instanceof \WP_Error &&
+          in_array('route_not_found', $matched_route->get_error_codes())) {
+            wp_die($matched_route, 'Route Not Found', array('response' => 404));
+        }
     }
 
     /**
      * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
-    public function do_route_actions() {
-      if ($this->matched_route instanceof Route) {
-        $this->execute_route_hook();
-      }
-      else if ($this->matched_route instanceof ActionRoute) {
-        $this->execute_route_function();
-      }
-      else if ($this->matched_route instanceof RedirectRoute) {
-        $this->execute_redirect();
-      }
+    public function doRouteActions()
+    {
+        if ($this->matched_route instanceof Route) {
+            $this->executeRouteHook();
+        }
+        else if ($this->matched_route instanceof ActionRoute) {
+            $this->executeRouteFunction();
+        }
+        else if ($this->matched_route instanceof RedirectRoute) {
+            $this->executeRedirect();
+        }
     }
 
-    private function execute_route_hook() {
-      status_header( 200 );
-      do_action( $this->matched_route->getAction(), $this->matched_args );
+    private function executeRouteHook()
+    {
+        status_header( 200 );
+        do_action( $this->matched_route->getAction(), $this->matched_args );
     }
 
-    private function execute_route_function() {
-      $action = $this->matched_route->getAction();
-      if( $this->matched_route->hasCallback() ) {
-        $action = call_user_func($action, $this->matched_args);
-      }
+    private function executeRouteFunction()
+    {
+        $action = $this->matched_route->getAction();
+        if( $this->matched_route->hasCallback() ) {
+            $action = call_user_func($action, $this->matched_args);
+        }
     }
 
-    private function execute_redirect() {
-      $redirect_to = $this->matched_route->getAction();
-      if( $this->matched_route->hasCallback() ) {
-        $redirect_to = call_user_func($redirect_to, $this->matched_args);
-      }
-      nocache_headers();
-      if($this->matched_route->isExternal()) {
-        wp_redirect($redirect_to, $this->matched_route->getStatus());
+    private function executeRedirect()
+    {
+        $redirect_to = $this->matched_route->getAction();
+        if($this->matched_route->hasCallback()) {
+            $redirect_to = call_user_func($redirect_to, $this->matched_args);
+        }
+        nocache_headers();
+        if($this->matched_route->isExternal()) {
+            wp_redirect($redirect_to, $this->matched_route->getStatus());
+            exit;
+        }
+        wp_safe_redirect(home_url($redirect_to), $this->matched_route->getStatus());
         exit;
-      }
-      wp_safe_redirect( home_url($redirect_to), $this->matched_route->getStatus() );
-      exit;
     }
 
     /**
@@ -151,17 +154,14 @@ class PluboRoutesProcessor
      *
      * @return string
      */
-    public function route_template_include($template) {
-      if ( !$this->matched_route instanceof Route ) return $template;
-
-      if($this->matched_route->hasTemplateCallback()) {
-        $template_func = $this->matched_route->getTemplate();
-        $template = call_user_func( $template_func, $this->matched_args );
-      }
-      else $template = apply_filters( 'plubo/template', locate_template( $this->matched_route->getTemplate() ) );
-      return $template;
+    public function includeRouteTemplate($template)
+    {
+        if ( !$this->matched_route instanceof Route ) return $template;
+        if($this->matched_route->hasTemplateCallback()) {
+            $template_func = $this->matched_route->getTemplate();
+            $template = call_user_func( $template_func, $this->matched_args );
+        }
+        else $template = apply_filters( 'plubo/template', locate_template( $this->matched_route->getTemplate() ) );
+        return $template;
     }
-
-
-
 }

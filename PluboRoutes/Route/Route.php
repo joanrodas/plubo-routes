@@ -31,12 +31,13 @@ final class Route implements RouteInterface
      * @param string|callable $template
      * @param array $config
      */
-    public function __construct(string $name, string $path, $template, array $config=[]) {
-      $this->name = $name;
-      $this->path = $path;
-      $this->template = $template;
-      $this->config = $config;
-      $this->args = array();
+    public function __construct(string $name, string $path, $template, array $config=[])
+    {
+        $this->name = $name;
+        $this->path = $path;
+        $this->template = $template;
+        $this->config = $config;
+        $this->args = array();
     }
 
     /**
@@ -44,8 +45,9 @@ final class Route implements RouteInterface
      *
      * @return string
      */
-    public function getName() {
-      return $this->name;
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -53,8 +55,9 @@ final class Route implements RouteInterface
      *
      * @return string
      */
-    public function getAction() {
-      return "plubo/route_{$this->getName()}";
+    public function getAction()
+    {
+        return "plubo/route_{$this->getName()}";
     }
 
     /**
@@ -62,8 +65,9 @@ final class Route implements RouteInterface
      *
      * @return boolean
      */
-    public function hasCallback() {
-      return false;
+    public function hasCallback()
+    {
+        return false;
     }
 
     /**
@@ -71,8 +75,9 @@ final class Route implements RouteInterface
      *
      * @return boolean
      */
-    public function hasTemplateCallback() {
-      return is_callable($this->template);
+    public function hasTemplateCallback()
+    {
+        return is_callable($this->template);
     }
 
     /**
@@ -80,8 +85,8 @@ final class Route implements RouteInterface
      *
      * @return string
      */
-    public function getTemplate() {
-      return $this->template;
+    public function getTemplate()
+    {
+        return $this->template;
     }
-
 }
