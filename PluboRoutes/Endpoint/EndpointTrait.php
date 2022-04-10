@@ -1,33 +1,50 @@
 <?php
-namespace PluboRoutes\Route;
+namespace PluboRoutes\Endpoint;
 
 /**
- * Common route functions.
+ * Common endpoint functions.
  *
  */
-trait RouteTrait
+trait EndpointTrait
 {
 
     /**
-     * The URL path that the route needs to match.
+     * The endpoint namespace.
+     *
+     * @var string
+     */
+    private $namespace;
+
+    /**
+     * The URL path that the endpoint needs to match.
      *
      * @var string
      */
     private $path;
 
     /**
-     * The optional config of the route.
+     * The configuration of the endpoint.
      *
      * @var array
      */
     private $config;
 
     /**
-     * The matches of the route.
+     * The matches of the endpoint.
      *
      * @var array
      */
     private $args;
+
+    /**
+     * Get the namespace of the endpoint.
+     *
+     * @return string
+     */
+    public function getNamespace()
+    {
+        return $this->path;
+    }
 
     /**
      * Get the path to be matched.
@@ -40,7 +57,7 @@ trait RouteTrait
     }
 
     /**
-     * Get the config parameters of the route.
+     * Get the config parameters of the endpoint.
      *
      * @return array
      */
@@ -50,7 +67,7 @@ trait RouteTrait
     }
 
     /**
-     * Set the matches of the route.
+     * Set the matches of the endpoint.
      *
      * @param array
      */
@@ -60,7 +77,7 @@ trait RouteTrait
     }
 
     /**
-     * Get the matches of the route.
+     * Get the matches of the endpoint.
      *
      * @return array
      */
@@ -70,7 +87,7 @@ trait RouteTrait
     }
 
     /**
-     * Serialize the route.
+     * Serialize the endpoint.
      *
      * @return string
      */
@@ -80,7 +97,7 @@ trait RouteTrait
     }
 
     /**
-     * Unserialize the route.
+     * Unserialize the endpoint.
      *
      * @param array
      */
