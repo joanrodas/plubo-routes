@@ -150,13 +150,28 @@ class Router
         $matches = RegexHelper::getRegexMatches($regex_path);
         if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
-                $pattern = explode(':', $pattern);
-                if (count($pattern) > 1) {
-                    $regex_code = RegexHelper::getRegex($pattern[1]);
-                    $regex_code = "(?P<$pattern[0]>$regex_code)";
-                    $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
-                }
+                $regex_path = $this->getEndpointPatternPath($regex_path, $key, $pattern, $matches);
             }
+        }
+        return $regex_path;
+    }
+
+    /**
+     * Get translated Regex path for an endpoint pattern.
+     *
+     * @param string $path
+     * @param int $key
+     * @param string $pattern
+     * @param array $matches
+     * @return string $regex_path
+     */
+    private function getEndpointPatternPath(string $path, int $key, string $pattern, array $matches)
+    {
+        $pattern = explode(':', $pattern);
+        if (count($pattern) > 1) {
+            $regex_code = RegexHelper::getRegex($pattern[1]);
+            $regex_code = "(?P<$pattern[0]>$regex_code)";
+            $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
         }
         return $regex_path;
     }
