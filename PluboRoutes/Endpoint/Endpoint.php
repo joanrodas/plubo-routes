@@ -50,7 +50,7 @@ abstract class Endpoint implements EndpointInterface
      * @param callable $config
      * @param string $method
      */
-    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null,)
+    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null)
     {
         $this->namespace = $namespace;
         $this->path = $path;
