@@ -73,11 +73,7 @@ class PluboRoutesProcessor
             $this->router->addRoute($route);
         }
         $this->router->compileRoutes();
-        $routes_hash = md5(serialize($routes));
-        if ($routes_hash != get_option('plubo-routes-hash')) {
-            flush_rewrite_rules();
-            update_option('plubo-routes-hash', $routes_hash);
-        }
+        $this->maybeFlushRewriteRules($routes, 'plubo-routes-hash');
     }
 
     /**
@@ -90,26 +86,34 @@ class PluboRoutesProcessor
             $this->router->addEndpoint($endpoint);
         }
         $this->router->compileEndpoints();
-        $endpoints_hash = md5(serialize($endpoints));
-        if ($endpoints_hash != get_option('plubo-endpoints-hash')) {
+        $this->maybeFlushRewriteRules($endpoints, 'plubo-endpoints-hash');
+    }
+
+    /**
+     * Flush if needed.
+     */
+    public function maybeFlushRewriteRules(array $values, string $option_name)
+    {
+        $hash = md5(serialize($values));
+        if ($hash != get_option($option_name)) {
             flush_rewrite_rules();
-            update_option('plubo-endpoints-hash', $endpoints_hash);
+            update_option($option_name, $hash);
         }
     }
 
     /**
      * Step 2: Attempts to match the current request to an added route.
      *
-     * @param WP $wp
+     * @param WP $env
      */
-    public function matchRouteRequest(\WP $wp)
+    public function matchRouteRequest(\WP $env)
     {
-        $found_route = $this->router->match($wp->query_vars);
+        $found_route = $this->router->match($env->query_vars);
         if ($found_route instanceof RouteInterface) {
             $found_args = array();
             $args_names = $found_route->getArgs();
             foreach ($args_names as $arg_name) {
-                $found_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
+                $found_args[$arg_name] = $env->query_vars[$arg_name] ?? false;
             }
             $this->matched_route =  $found_route;
             $this->matched_args = $found_args;

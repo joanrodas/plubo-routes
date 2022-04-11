@@ -15,6 +15,22 @@ class RegexHelper
     const SLUG = '([a-z0-9-]+)';
     const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
+    /**
+     * Get translated Regex path for an endpoint route.
+     *
+     * @param string $path
+     */
+    public function getRegexMatches(string $path)
+    {
+        preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
+        return $matches;
+    }
+
+    public static function cleanPath(string $path)
+    {
+        return ltrim(trim($path), '/');
+    }
+
     public static function getRegex($type)
     {
         $available_regex = array(

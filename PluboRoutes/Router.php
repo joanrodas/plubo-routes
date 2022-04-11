@@ -119,9 +119,10 @@ class Router
      */
     private function addRule(RouteInterface $route, $position = 'top')
     {
-        $regex_path = $this->cleanPath($route->getPath());
+        $regex_path = RegexHelper::cleanPath($route->getPath());
+        $matches = RegexHelper::getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if (preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
+        if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
                 $pattern = explode(':', $pattern);
                 if (count($pattern) > 1) {
@@ -138,11 +139,6 @@ class Router
         add_rewrite_rule("^$regex_path$", $index_string, $position);
     }
 
-    private function cleanPath($path)
-    {
-        return ltrim(trim($path), '/');
-    }
-
     /**
      * Get translated Regex path for an endpoint route.
      *
@@ -150,13 +146,15 @@ class Router
      */
     private function getEndpointPath(string $path)
     {
-        $regex_path = $this->cleanPath($path);
-        if (preg_match_all('#\{(.+?)\}#', $regex_path, $matches)) {
+        $regex_path = RegexHelper::getRegexMatches($path);
+        $matches = RegexHelper::getRegexMatches($regex_path);
+        if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
                 $pattern = explode(':', $pattern);
                 if (count($pattern) > 1) {
                     $regex_code = RegexHelper::getRegex($pattern[1]);
-                    $regex_path = str_replace($matches[0][$key], "(?P<$pattern[0]>$regex_code)", $regex_path);
+                    $regex_code = "(?P<$pattern[0]>$regex_code)";
+                    $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 }
             }
         }
