@@ -122,18 +122,17 @@ class Router
         $regex_path = RegexHelper::cleanPath($route->getPath());
         $matches = RegexHelper::getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if ($matches) {
-            foreach ($matches[1] as $key => $pattern) {
-                $pattern = explode(':', $pattern);
-                if (count($pattern) > 1) {
-                    $name = $pattern[0];
-                    $num_arg = $key+1;
-                    $regex_code = RegexHelper::getRegex($pattern[1]);
-                    $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
-                    add_rewrite_tag("%$name%", $regex_code);
-                    $index_string .= "&$name=\$matches[$num_arg]";
-                    $route->addArg($name);
-                }
+        if(!$matches) return;
+        foreach ($matches[1] as $key => $pattern) {
+            $pattern = explode(':', $pattern);
+            if (count($pattern) > 1) {
+                $name = $pattern[0];
+                $num_arg = $key+1;
+                $regex_code = RegexHelper::getRegex($pattern[1]);
+                $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
+                add_rewrite_tag("%$name%", $regex_code);
+                $index_string .= "&$name=\$matches[$num_arg]";
+                $route->addArg($name);
             }
         }
         add_rewrite_rule("^$regex_path$", $index_string, $position);
