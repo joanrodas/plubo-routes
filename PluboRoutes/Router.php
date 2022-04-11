@@ -122,7 +122,9 @@ class Router
         $regex_path = RegexHelper::cleanPath($route->getPath());
         $matches = RegexHelper::getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
-        if(!$matches) return;
+        if (!$matches) {
+          return;
+        }
         foreach ($matches[1] as $key => $pattern) {
             $pattern = explode(':', $pattern);
             if (count($pattern) > 1) {
