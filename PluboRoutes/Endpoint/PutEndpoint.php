@@ -16,6 +16,7 @@ final class PutEndpoint extends Endpoint
      */
     public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null)
     {
-        parent::__construct($namespace, $path, $config, $permission_callback, 'PUT');
+        parent::__construct($namespace, $path, $config, $permission_callback);
+        $this->method = 'PUT';
     }
 }

@@ -5,7 +5,7 @@ namespace PluboRoutes\Endpoint;
  * An Endpoint describes a route and its parameters.
  *
  */
-class Endpoint implements EndpointInterface
+abstract class Endpoint implements EndpointInterface
 {
     /**
      * The endpoint namespace.
@@ -50,14 +50,13 @@ class Endpoint implements EndpointInterface
      * @param callable $config
      * @param string $method
      */
-    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null, $method = \WP_REST_Server::READABLE)
+    public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null,)
     {
         $this->namespace = $namespace;
         $this->path = $path;
         $this->config = $config;
         $this->permission_callback = $permission_callback ?? '__return_true';
         $this->args = array();
-        $this->method = $method;
     }
 
     /**

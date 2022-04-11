@@ -16,6 +16,7 @@ final class GetEndpoint extends Endpoint
      */
     public function __construct(string $namespace, string $path, callable $config, callable $permission_callback = null)
     {
-        parent::__construct($namespace, $path, $config, $permission_callback, \WP_REST_Server::READABLE);
+        parent::__construct($namespace, $path, $config, $permission_callback);
+        $this->method = \WP_REST_Server::READABLE;
     }
 }
