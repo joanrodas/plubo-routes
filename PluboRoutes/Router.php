@@ -123,7 +123,7 @@ class Router
         $matches = RegexHelper::getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
         if (!$matches) {
-          return;
+            return;
         }
         foreach ($matches[1] as $key => $pattern) {
             $pattern = explode(':', $pattern);
