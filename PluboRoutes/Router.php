@@ -146,7 +146,7 @@ class Router
      */
     private function getEndpointPath(string $path)
     {
-        $regex_path = RegexHelper::getRegexMatches($path);
+        $regex_path = RegexHelper::cleanPath($path);
         $matches = RegexHelper::getRegexMatches($regex_path);
         if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
