@@ -171,8 +171,8 @@ class Router
         if (count($pattern) > 1) {
             $regex_code = RegexHelper::getRegex($pattern[1]);
             $regex_code = "(?P<$pattern[0]>$regex_code)";
-            $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
+            $path = str_replace($matches[0][$key], $regex_code, $path);
         }
-        return $regex_path;
+        return $path;
     }
 }
