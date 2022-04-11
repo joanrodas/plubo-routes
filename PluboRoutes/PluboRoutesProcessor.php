@@ -60,6 +60,7 @@ class PluboRoutesProcessor
         add_action('rest_api_init', array($self, 'addEndpoints'));
         add_action('template_redirect', array($self, 'doRouteActions'));
         add_action('template_include', array($self, 'includeRouteTemplate'));
+        add_filter('body_class', array($self, 'addBodyClasses'));
     }
 
     /**
@@ -178,8 +179,21 @@ class PluboRoutesProcessor
             $template_func = $this->matched_route->getTemplate();
             $template = call_user_func($template_func, $this->matched_args);
         } else {
-            $template = apply_filters('plubo/template', locate_template($this->matched_route->getTemplate()));
+            $template = locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
         }
         return $template;
+    }
+
+    /**
+     * Filter: If a route was found, add name as body tag.
+     */
+    public function addBodyClasses($classes)
+    {
+        if ($this->matched_route instanceof Route) {
+            $route_name = $this->matched_route->getName();
+            $classes["route-$route_name"];
+            $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
+        }
+        return $classes;
     }
 }
