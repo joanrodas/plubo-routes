@@ -2,6 +2,7 @@
 namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
+use PluboRoutes\Route\Route;
 use PluboRoutes\Endpoint\EndpointInterface;
 use PluboRoutes\Helpers\RegexHelperRoutes;
 use PluboRoutes\Helpers\RegexHelperEndpoints;
@@ -39,8 +40,8 @@ class Router
      */
     public function __construct()
     {
-        $this->routes = array();
-        $this->endpoints = array();
+        $this->routes = [];
+        $this->endpoints = [];
         $this->route_variable = apply_filters('plubo/route_variable', 'route_name');
     }
 
@@ -82,11 +83,11 @@ class Router
     {
         foreach ($this->endpoints as $endpoint) {
             $path = $this->getEndpointPath($endpoint->getPath());
-            register_rest_route($endpoint->getNamespace(), $path, array(
+            register_rest_route($endpoint->getNamespace(), $path, [
               'methods' => $endpoint->getMethod(),
               'callback' => $endpoint->getConfig(),
               'permission_callback' => $endpoint->getPermissionCallback()
-            ));
+            ]);
         }
     }
 
@@ -138,6 +139,9 @@ class Router
                 $route->addArg($name);
             }
         }
+        if ($route instanceof Route) {
+            $index_string = $this->addExtraVars($route, $index_string);
+        }
         add_rewrite_rule("^$regex_path$", $index_string, $position);
     }
 
@@ -175,5 +179,22 @@ class Router
             $path = str_replace($matches[0][$key], $regex_code, $path);
         }
         return $path;
+    }
+
+    /**
+     * Add extra query vars.
+     *
+     * @param Route $route
+     * @param string $index_string
+     * @return string $index_string
+     */
+    private function addExtraVars(Route $route, string $index_string)
+    {
+        $extra_vars = $route->getExtraVars();
+        foreach ($extra_vars as $var_name => $var_value) {
+            $index_string .= "&$var_name=$var_value";
+            $route->addArg($var_name);
+        }
+        return $index_string;
     }
 }

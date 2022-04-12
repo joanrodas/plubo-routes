@@ -37,7 +37,7 @@ final class Route implements RouteInterface
         $this->path = $path;
         $this->template = $template;
         $this->config = $config;
-        $this->args = array();
+        $this->args = [];
     }
 
     /**
@@ -88,5 +88,83 @@ final class Route implements RouteInterface
     public function getTemplate()
     {
         return $this->template;
+    }
+
+    /**
+     * Check if the route is a private route (logged users only).
+     *
+     * @return boolean
+     */
+    public function isPrivate()
+    {
+        $is_private = $this->config['private'] ?? false;
+        return filter_var($is_private, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Check if the route has a redirect if access not allowed.
+     *
+     * @return boolean
+     */
+    public function hasRedirect()
+    {
+        $redirect = $this->config['redirect'] ?? true;
+        return filter_var(($redirect != false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Get the http status if access not allowed.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->hasRedirect() ? 302 : 403;
+        $status = $this->isPrivate() ? $status : 200;
+        return $this->config['status'] ?? $status;
+    }
+
+    /**
+     * Get the redirect URL.
+     *
+     * @return int
+     */
+    public function getRedirect()
+    {
+        $redirect = $this->config['redirect'] ?? home_url();
+        return $redirect;
+    }
+
+    /**
+     * Get the allowed roles.
+     *
+     * @return array|string
+     */
+    public function getRoles()
+    {
+        $roles = $this->config['allowed_roles'] ?? [];
+        return $roles;
+    }
+
+    /**
+     * Get the allowed capabilities.
+     *
+     * @return array|string
+     */
+    public function getCapabilities()
+    {
+        $capabilities = $this->config['allowed_caps'] ?? [];
+        return $capabilities;
+    }
+
+    /**
+     * Get extra query vars.
+     *
+     * @return array
+     */
+    public function getExtraVars()
+    {
+        $query_vars = $this->config['extra_vars'] ?? [];
+        return $query_vars;
     }
 }

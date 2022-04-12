@@ -23,11 +23,19 @@ PluboRoutes\PluboRoutesProcessor::init();
 add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\Route(
         'clients',
-        'client/{client_id:number}',
+        'client/number',
         function () {
             //Do some stuff...
-            return locate_template(app('sage.finder')->locate('client')); //SAGE 10 example
-        }
+            return locate_template('test');
+        },
+        array(
+            'private' => true, //Default false
+            'redirect' => 'https://sirvelia.com',
+            'allowed_roles' => array('patata'),
+            'extra_vars' => [
+                'client_id' => 'number'
+            ],
+        )
     );
     $routes[] = new PluboRoutes\Route\RedirectRoute(
         'city/{city:word}',
@@ -36,7 +44,7 @@ add_filter('plubo/routes', function ($routes) {
         },
         array(
             'status' => 302, //Default 301
-            'external' => true //Default false
+            'external' => true, //Default false
         )
     );
     $routes[] = new PluboRoutes\Route\ActionRoute(
@@ -45,7 +53,7 @@ add_filter('plubo/routes', function ($routes) {
             $to = get_option('admin_email');
             $subject = 'Hello world';
             $message = 'Wow!';
-            $headers = array('Content-Type: text/html; charset=UTF-8');
+            $headers = ['Content-Type: text/html; charset=UTF-8'];
             wp_mail($to, $subject, $message, $headers);
         }
     );

@@ -28,7 +28,7 @@ final class RedirectRoute implements RouteInterface
         $this->path = $path;
         $this->action = $action;
         $this->config = $config;
-        $this->args = array();
+        $this->args = [];
     }
 
     /**

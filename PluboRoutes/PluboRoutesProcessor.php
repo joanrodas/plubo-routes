@@ -55,12 +55,13 @@ class PluboRoutesProcessor
     public static function init()
     {
         $self = new self(new Router());
-        add_action('init', array($self, 'addRoutes'));
-        add_action('parse_request', array($self, 'matchRouteRequest'));
-        add_action('rest_api_init', array($self, 'addEndpoints'));
-        add_action('template_redirect', array($self, 'doRouteActions'));
-        add_action('template_include', array($self, 'includeRouteTemplate'));
-        add_filter('body_class', array($self, 'addBodyClasses'));
+        add_action('init', [$self, 'addRoutes']);
+        add_action('parse_request', [$self, 'matchRouteRequest']);
+        add_action('rest_api_init', [$self, 'addEndpoints']);
+        add_action('template_redirect', [$self, 'doRouteActions']);
+        add_action('template_include', [$self, 'includeRouteTemplate']);
+        add_filter('body_class', [$self, 'addBodyClasses']);
+        add_filter('query_vars', [$self, 'addExtraVars']);
     }
 
     /**
@@ -68,7 +69,7 @@ class PluboRoutesProcessor
      */
     public function addRoutes()
     {
-        $routes = apply_filters('plubo/routes', array());
+        $routes = apply_filters('plubo/routes', []);
         foreach ($routes as $route) {
             $this->router->addRoute($route);
         }
@@ -81,7 +82,7 @@ class PluboRoutesProcessor
      */
     public function addEndpoints()
     {
-        $endpoints = apply_filters('plubo/endpoints', array());
+        $endpoints = apply_filters('plubo/endpoints', []);
         foreach ($endpoints as $endpoint) {
             $this->router->addEndpoint($endpoint);
         }
@@ -110,7 +111,7 @@ class PluboRoutesProcessor
     {
         $found_route = $this->router->match($env->query_vars);
         if ($found_route instanceof RouteInterface) {
-            $found_args = array();
+            $found_args = [];
             $args_names = $found_route->getArgs();
             foreach ($args_names as $arg_name) {
                 $found_args[$arg_name] = $env->query_vars[$arg_name] ?? false;
@@ -120,7 +121,7 @@ class PluboRoutesProcessor
         }
         if ($found_route instanceof \WP_Error &&
           in_array('route_not_found', $found_route->get_error_codes())) {
-            wp_die($found_route, 'Route Not Found', array('response' => 404));
+            wp_die($found_route, 'Route Not Found', ['response' => 404]);
         }
     }
 
@@ -140,8 +141,54 @@ class PluboRoutesProcessor
 
     private function executeRouteHook()
     {
+        if ($this->matched_route->isPrivate()) {
+            $user = wp_get_current_user();
+            $this->checkLoggedIn($user);
+            $this->checkRoles($user);
+            $this->checkCapabilities($user);
+        }
         status_header(200);
         do_action($this->matched_route->getAction(), $this->matched_args);
+    }
+
+    private function checkLoggedIn($user)
+    {
+        if (!$user->exists()) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function checkRoles($user)
+    {
+        $allowed_roles = $this->matched_route->getRoles();
+        if ($allowed_roles && !array_intersect((array)$user->roles, $allowed_roles)) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function checkCapabilities($user)
+    {
+        $allowed_caps = $this->matched_route->getCapabilities();
+        $is_allowed = $allowed_caps ? false : true;
+        foreach ($allowed_caps as $allowed_cap) {
+            if ($user->has_cap($allowed_cap)) {
+                $is_allowed = true;
+                break;
+            }
+        }
+        if (!$is_allowed) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function forbidAccess()
+    {
+        if ($this->matched_route->hasRedirect()) {
+            wp_redirect($this->matched_route->getRedirect(), $this->matched_route->getStatus());
+            exit;
+        }
+        status_header($this->matched_route->getStatus());
+        exit;
     }
 
     private function executeRouteFunction()
@@ -199,5 +246,19 @@ class PluboRoutesProcessor
             $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
         }
         return $classes;
+    }
+
+    /**
+     * Filter: Add extra static query vars.
+     */
+    public function addExtraVars($query_vars)
+    {
+        if ($this->matched_route instanceof Route) {
+            $route_extra_vars = $this->matched_route->getExtraVars();
+            foreach ($route_extra_vars as $extra_var) {
+                $query_vars[] = $extra_var;
+            }
+        }
+        return $query_vars;
     }
 }
