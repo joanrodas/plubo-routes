@@ -142,30 +142,46 @@ class PluboRoutesProcessor
     {
         if ($this->matched_route->isPrivate()) {
             $user = wp_get_current_user();
-            if (!$user->exists()) {
-                $this->forbidAccess();
-            }
-            $allowed_roles = $this->matched_route->getRoles();
-            $allowed_caps = $this->matched_route->getCapabilities();
-            if ($allowed_roles && !array_intersect((array)$user->roles, $allowed_roles)) {
-                $this->forbidAccess();
-            }
-            $is_allowed = $allowed_caps ? false : true;
-            foreach ($allowed_caps as $allowed_cap) {
-                if ($user->has_cap($allowed_cap)) {
-                    $is_allowed = true;
-                    break;
-                }
-            }
-            if (!$is_allowed) {
-                $this->forbidAccess();
-            }
+            $this->checkLoggedIn($user);
+            $this->checkRoles($user);
+            $this->checkCapabilities($user);
         }
         status_header(200);
         do_action($this->matched_route->getAction(), $this->matched_args);
     }
 
-    private function forbidAccess() {
+    private function checkLoggedIn($user)
+    {
+        if (!$user->exists()) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function checkRoles($user)
+    {
+        $allowed_roles = $this->matched_route->getRoles();
+        $allowed_caps = $this->matched_route->getCapabilities();
+        if ($allowed_roles && !array_intersect((array)$user->roles, $allowed_roles)) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function checkCapabilities($user)
+    {
+        $is_allowed = $allowed_caps ? false : true;
+        foreach ($allowed_caps as $allowed_cap) {
+            if ($user->has_cap($allowed_cap)) {
+                $is_allowed = true;
+                break;
+            }
+        }
+        if (!$is_allowed) {
+            $this->forbidAccess();
+        }
+    }
+
+    private function forbidAccess()
+    {
         if ($this->matched_route->hasRedirect()) {
             wp_redirect($this->matched_route->getRedirect(), $this->matched_route->getStatus());
             exit;
