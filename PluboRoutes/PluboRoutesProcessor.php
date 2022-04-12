@@ -113,8 +113,10 @@ class PluboRoutesProcessor
         if ($found_route instanceof RouteInterface) {
             $found_args = [];
             $args_names = $found_route->getArgs();
+            $extra_args = $found_route->getExtraVars();
             foreach ($args_names as $arg_name) {
-                $found_args[$arg_name] = $env->query_vars[$arg_name] ?? false;
+                $query_value = $env->query_vars[$arg_name] ?? ($extra_args[$arg_name] ?? false);
+                $found_args[$arg_name] = $query_value;
             }
             $this->matched_route =  $found_route;
             $this->matched_args = $found_args;
