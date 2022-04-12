@@ -39,8 +39,8 @@ class Router
      */
     public function __construct()
     {
-        $this->routes = array();
-        $this->endpoints = array();
+        $this->routes = [];
+        $this->endpoints = [];
         $this->route_variable = apply_filters('plubo/route_variable', 'route_name');
     }
 
@@ -82,11 +82,11 @@ class Router
     {
         foreach ($this->endpoints as $endpoint) {
             $path = $this->getEndpointPath($endpoint->getPath());
-            register_rest_route($endpoint->getNamespace(), $path, array(
+            register_rest_route($endpoint->getNamespace(), $path, [
               'methods' => $endpoint->getMethod(),
               'callback' => $endpoint->getConfig(),
               'permission_callback' => $endpoint->getPermissionCallback()
-            ));
+            ]);
         }
     }
 

@@ -56,7 +56,7 @@ abstract class Endpoint implements EndpointInterface
         $this->path = $path;
         $this->config = $config;
         $this->permission_callback = $permission_callback ?? '__return_true';
-        $this->args = array();
+        $this->args = [];
     }
 
     /**
@@ -116,7 +116,7 @@ abstract class Endpoint implements EndpointInterface
      */
     public function serialize()
     {
-        return serialize(array($this->path, $this->method));
+        return serialize([$this->path, $this->method]);
     }
 
     /**

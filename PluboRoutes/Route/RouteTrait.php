@@ -76,7 +76,7 @@ trait RouteTrait
      */
     public function serialize()
     {
-        return serialize(array($this->path, $this->args));
+        return serialize([$this->path, $this->args]);
     }
 
     /**

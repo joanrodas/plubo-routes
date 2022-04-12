@@ -15,7 +15,7 @@ abstract class RegexHelper
     const SLUG = '([a-z0-9-]+)';
     const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
-    const AVAILABLE_REGEX = array(
+    const AVAILABLE_REGEX = [
         'number' => self::NUMBER,
         'word' => self::WORD,
         'date' => self::DATE,
@@ -27,7 +27,7 @@ abstract class RegexHelper
         'jwt' => self::JWT,
         'email' => self::EMAIL,
         'ip' => self::IP
-    );
+    ];
 
     /**
      * Get translated Regex path for an endpoint route.
