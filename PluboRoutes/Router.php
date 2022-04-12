@@ -190,15 +190,11 @@ class Router
      */
     private function addExtraVars(Route $route, string $index_string)
     {
-      $extra_vars = $route->getExtraVars();
-      foreach ($extra_vars as $var_name => $var_value) {
-        $index_string .= "&$var_name=$var_value";
-        $route->addArg($var_name);
-      }
-      return $index_string;
+        $extra_vars = $route->getExtraVars();
+        foreach ($extra_vars as $var_name => $var_value) {
+            $index_string .= "&$var_name=$var_value";
+            $route->addArg($var_name);
+        }
+        return $index_string;
     }
-
-
-
-
 }

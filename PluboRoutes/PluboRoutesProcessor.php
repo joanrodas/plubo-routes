@@ -256,7 +256,7 @@ class PluboRoutesProcessor
         if ($this->matched_route instanceof Route) {
             $route_extra_vars = $this->matched_route->getExtraVars();
             foreach ($route_extra_vars as $extra_var) {
-              $query_vars[] = $extra_var;
+                $query_vars[] = $extra_var;
             }
         }
         return $query_vars;
