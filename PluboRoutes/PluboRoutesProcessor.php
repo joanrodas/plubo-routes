@@ -172,7 +172,7 @@ class PluboRoutesProcessor
     private function checkCapabilities($user)
     {
         $allowed_caps = $this->matched_route->getCapabilities();
-        if ($this->matched_route->hasCapabilitiesCallback()) {
+        if (is_callable($allowed_caps)) {
             $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
         }
         $is_allowed = $allowed_caps ? false : true;
