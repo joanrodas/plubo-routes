@@ -156,4 +156,15 @@ final class Route implements RouteInterface
         $capabilities = $this->config['allowed_caps'] ?? [];
         return $capabilities;
     }
+
+    /**
+     * Get extra query vars.
+     *
+     * @return array
+     */
+    public function getExtraVars()
+    {
+        $query_vars = $this->config['extra_vars'] ?? [];
+        return $query_vars;
+    }
 }

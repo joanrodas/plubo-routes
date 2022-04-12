@@ -23,7 +23,7 @@ PluboRoutes\PluboRoutesProcessor::init();
 add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\Route(
         'clients',
-        'client/{client_id:number}',
+        'client/number',
         function () {
             //Do some stuff...
             return locate_template('test');
@@ -31,7 +31,10 @@ add_filter('plubo/routes', function ($routes) {
         array(
             'private' => true, //Default false
             'redirect' => 'https://sirvelia.com',
-            'allowed_roles' => array('patata')
+            'allowed_roles' => array('patata'),
+            'extra_vars' => [
+                'client_id' => 'number'
+            ],
         )
     );
     $routes[] = new PluboRoutes\Route\RedirectRoute(
