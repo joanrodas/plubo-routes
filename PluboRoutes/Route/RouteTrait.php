@@ -69,11 +69,21 @@ trait RouteTrait
         return $this->args;
     }
 
+    /**
+     * Serialize the route.
+     *
+     * @return string
+     */
     public function serialize()
     {
         return serialize(array($this->path, $this->args));
     }
 
+    /**
+     * Unserialize the route.
+     *
+     * @param array
+     */
     public function unserialize($data)
     {
         $data = unserialize($data);

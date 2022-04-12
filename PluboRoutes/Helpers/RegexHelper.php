@@ -1,7 +1,7 @@
 <?php
 namespace PluboRoutes\Helpers;
 
-class RegexHelper
+abstract class RegexHelper
 {
     const DIGIT = '([0-9])';
     const NUMBER = '([0-9]+)';
@@ -15,21 +15,47 @@ class RegexHelper
     const SLUG = '([a-z0-9-]+)';
     const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
-    public static function getRegex($type)
+    const AVAILABLE_REGEX = array(
+        'number' => self::NUMBER,
+        'word' => self::WORD,
+        'date' => self::DATE,
+        'slug' => self::SLUG,
+        'digit' => self::DIGIT,
+        'year' => self::YEAR,
+        'month' => self::MONTH,
+        'day' => self::DAY,
+        'jwt' => self::JWT,
+        'email' => self::EMAIL,
+        'ip' => self::IP
+    );
+
+    /**
+     * Get translated Regex path for an endpoint route.
+     *
+     * @param string $path
+     */
+    public static function getRegexMatches(string $regex_path)
     {
-        $available_regex = array(
-            'number' => self::NUMBER,
-            'word' => self::WORD,
-            'date' => self::DATE,
-            'slug' => self::SLUG,
-            'digit' => self::DIGIT,
-            'year' => self::YEAR,
-            'month' => self::MONTH,
-            'day' => self::DAY,
-            'jwt' => self::JWT,
-            'email' => self::EMAIL,
-            'ip' => self::IP
-        );
-        return array_key_exists($type, $available_regex) ? $available_regex[$type] : $type;
+        preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
+        return $matches;
     }
+
+    /**
+     * Return trimmed path.
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function cleanPath(string $path)
+    {
+        return ltrim(trim($path), '/');
+    }
+
+    /**
+     * Return regex of path.
+     *
+     * @param mixed $type
+     * @return string
+     */
+    abstract public static function getRegex($type): string;
 }

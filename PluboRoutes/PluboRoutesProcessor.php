@@ -57,8 +57,10 @@ class PluboRoutesProcessor
         $self = new self(new Router());
         add_action('init', array($self, 'addRoutes'));
         add_action('parse_request', array($self, 'matchRouteRequest'));
+        add_action('rest_api_init', array($self, 'addEndpoints'));
         add_action('template_redirect', array($self, 'doRouteActions'));
         add_action('template_include', array($self, 'includeRouteTemplate'));
+        add_filter('body_class', array($self, 'addBodyClasses'));
     }
 
     /**
@@ -70,27 +72,48 @@ class PluboRoutesProcessor
         foreach ($routes as $route) {
             $this->router->addRoute($route);
         }
-        $this->router->compile();
-        $routes_hash = md5(serialize($routes));
-        if ($routes_hash != get_option('plubo-routes-hash')) {
+        $this->router->compileRoutes();
+        $this->maybeFlushRewriteRules($routes, 'plubo-routes-hash');
+    }
+
+    /**
+     * Step 1 alt: Register all our endpoints into WordPress. Flush rewrite rules if the endpoints changed.
+     */
+    public function addEndpoints()
+    {
+        $endpoints = apply_filters('plubo/endpoints', array());
+        foreach ($endpoints as $endpoint) {
+            $this->router->addEndpoint($endpoint);
+        }
+        $this->router->compileEndpoints();
+        $this->maybeFlushRewriteRules($endpoints, 'plubo-endpoints-hash');
+    }
+
+    /**
+     * Flush if needed.
+     */
+    public function maybeFlushRewriteRules(array $values, string $option_name)
+    {
+        $hash = md5(serialize($values));
+        if ($hash != get_option($option_name)) {
             flush_rewrite_rules();
-            update_option('plubo-routes-hash', $routes_hash);
+            update_option($option_name, $hash);
         }
     }
 
     /**
      * Step 2: Attempts to match the current request to an added route.
      *
-     * @param WP $wp
+     * @param WP $env
      */
-    public function matchRouteRequest(\WP $wp)
+    public function matchRouteRequest(\WP $env)
     {
-        $found_route = $this->router->match($wp->query_vars);
+        $found_route = $this->router->match($env->query_vars);
         if ($found_route instanceof RouteInterface) {
             $found_args = array();
             $args_names = $found_route->getArgs();
             foreach ($args_names as $arg_name) {
-                $found_args[$arg_name] = $wp->query_vars[$arg_name] ?? false;
+                $found_args[$arg_name] = $env->query_vars[$arg_name] ?? false;
             }
             $this->matched_route =  $found_route;
             $this->matched_args = $found_args;
@@ -160,8 +183,21 @@ class PluboRoutesProcessor
             $template_func = $this->matched_route->getTemplate();
             $template = call_user_func($template_func, $this->matched_args);
         } else {
-            $template = apply_filters('plubo/template', locate_template($this->matched_route->getTemplate()));
+            $template = locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
         }
         return $template;
+    }
+
+    /**
+     * Filter: If a route was found, add name as body tag.
+     */
+    public function addBodyClasses($classes)
+    {
+        if ($this->matched_route instanceof Route) {
+            $route_name = $this->matched_route->getName();
+            $classes["route-$route_name"];
+            $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
+        }
+        return $classes;
     }
 }
