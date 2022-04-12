@@ -160,7 +160,6 @@ class PluboRoutesProcessor
     private function checkRoles($user)
     {
         $allowed_roles = $this->matched_route->getRoles();
-        $allowed_caps = $this->matched_route->getCapabilities();
         if ($allowed_roles && !array_intersect((array)$user->roles, $allowed_roles)) {
             $this->forbidAccess();
         }
@@ -168,6 +167,7 @@ class PluboRoutesProcessor
 
     private function checkCapabilities($user)
     {
+        $allowed_caps = $this->matched_route->getCapabilities();
         $is_allowed = $allowed_caps ? false : true;
         foreach ($allowed_caps as $allowed_cap) {
             if ($user->has_cap($allowed_cap)) {
