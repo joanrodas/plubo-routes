@@ -20,7 +20,7 @@ class RegexHelper
      *
      * @param string $path
      */
-    public function getRegexMatches(string $regex_path)
+    public static function getRegexMatches(string $regex_path)
     {
         preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
         return $matches;
