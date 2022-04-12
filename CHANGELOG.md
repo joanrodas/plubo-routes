@@ -20,6 +20,8 @@
 
 * [Feature] Endpoints
 
+## 0.1
+
 ### 0.1.4
 
 * [Refactor] Added Traits + Regex helper class
