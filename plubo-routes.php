@@ -31,7 +31,7 @@ add_filter('plubo/routes', function ($routes) {
         array(
             'private' => true, //Default false
             'redirect' => 'https://sirvelia.com',
-            'allowed_roles' => array('patata'),
+            'allowed_roles' => 'administrator',
             'extra_vars' => [
                 'client_id' => 'number'
             ],

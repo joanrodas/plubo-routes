@@ -136,6 +136,17 @@ final class Route implements RouteInterface
     }
 
     /**
+     * Check if the roles option is a callable.
+     *
+     * @return boolean
+     */
+    public function hasRolesCallback()
+    {
+        $roles = $this->config['allowed_roles'] ?? [];
+        return is_callable($roles);
+    }
+
+    /**
      * Get the allowed roles.
      *
      * @return array|string
@@ -144,6 +155,17 @@ final class Route implements RouteInterface
     {
         $roles = $this->config['allowed_roles'] ?? [];
         return $roles;
+    }
+
+    /**
+     * Check if the capabilities option is a callable.
+     *
+     * @return boolean
+     */
+    public function hasCapabilitiesCallback()
+    {
+        $capabilities = $this->config['allowed_caps'] ?? [];
+        return is_callable($capabilities);
     }
 
     /**

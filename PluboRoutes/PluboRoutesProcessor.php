@@ -161,16 +161,19 @@ class PluboRoutesProcessor
     private function checkRoles($user)
     {
         $allowed_roles = $this->matched_route->getRoles();
-        if ($allowed_roles && !array_intersect((array)$user->roles, $allowed_roles)) {
+        if ($this->matched_route->hasRolesCallback()) {
+            $allowed_roles = call_user_func($allowed_roles, $this->matched_args);
+        }
+        if ($allowed_roles && !array_intersect((array)$user->roles, (array)$allowed_roles)) {
             $this->forbidAccess();
         }
     }
 
     private function checkCapabilities($user)
     {
-        $allowed_caps = $this->matched_route->getCapabilities();
+        $allowed_caps = $this->getAllowedCapabilities();
         $is_allowed = $allowed_caps ? false : true;
-        foreach ($allowed_caps as $allowed_cap) {
+        foreach ((array)$allowed_caps as $allowed_cap) {
             if ($user->has_cap($allowed_cap)) {
                 $is_allowed = true;
                 break;
@@ -179,6 +182,15 @@ class PluboRoutesProcessor
         if (!$is_allowed) {
             $this->forbidAccess();
         }
+    }
+
+    private function getAllowedCapabilities()
+    {
+        $allowed_caps = $this->matched_route->getCapabilities();
+        if ($this->matched_route->hasCapabilitiesCallback()) {
+            $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
+        }
+        return $allowed_caps;
     }
 
     private function forbidAccess()
