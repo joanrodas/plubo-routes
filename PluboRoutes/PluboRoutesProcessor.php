@@ -254,7 +254,7 @@ class PluboRoutesProcessor
     {
         if ($this->matched_route instanceof Route) {
             $route_name = $this->matched_route->getName();
-            $classes["route-$route_name"];
+            $classes[] = "route-$route_name";
             $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
         }
         return $classes;
