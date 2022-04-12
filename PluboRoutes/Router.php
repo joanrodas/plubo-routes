@@ -140,7 +140,7 @@ class Router
             }
         }
         if ($route instanceof Route) {
-          $index_string = $this->addExtraVars($route, $index_string);
+            $index_string = $this->addExtraVars($route, $index_string);
         }
         add_rewrite_rule("^$regex_path$", $index_string, $position);
     }
