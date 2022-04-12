@@ -258,7 +258,7 @@ class PluboRoutesProcessor
             $route_name = $this->matched_route->getName();
             $classes[] = "route-$route_name";
             foreach ($this->matched_args as $arg_name => $arg_value) {
-              $classes[] = sanitize_title("$arg_name-$arg_value");
+                $classes[] = sanitize_title("$arg_name-$arg_value");
             }
             $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
         }
