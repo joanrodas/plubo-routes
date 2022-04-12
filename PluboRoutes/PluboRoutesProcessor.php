@@ -184,7 +184,8 @@ class PluboRoutesProcessor
         }
     }
 
-    private function getAllowedCapabilities() {
+    private function getAllowedCapabilities()
+    {
         $allowed_caps = $this->matched_route->getCapabilities();
         if ($this->matched_route->hasCapabilitiesCallback()) {
             $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
