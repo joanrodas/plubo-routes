@@ -3,7 +3,8 @@ namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
 use PluboRoutes\Endpoint\EndpointInterface;
-use PluboRoutes\Helpers\RegexHelper;
+use PluboRoutes\Helpers\RegexHelperRoutes;
+use PluboRoutes\Helpers\RegexHelperEndpoints;
 
 /**
  * The Router manages routes using the WordPress rewrite API.
@@ -119,8 +120,8 @@ class Router
      */
     private function addRule(RouteInterface $route, $position = 'top')
     {
-        $regex_path = RegexHelper::cleanPath($route->getPath());
-        $matches = RegexHelper::getRegexMatches($regex_path);
+        $regex_path = RegexHelperRoutes::cleanPath($route->getPath());
+        $matches = RegexHelperRoutes::getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
         if (!$matches) {
             return;
@@ -130,7 +131,7 @@ class Router
             if (count($pattern) > 1) {
                 $name = $pattern[0];
                 $num_arg = $key+1;
-                $regex_code = RegexHelper::getRegex($pattern[1]);
+                $regex_code = RegexHelperRoutes::getRegex($pattern[1]);
                 $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 add_rewrite_tag("%$name%", $regex_code);
                 $index_string .= "&$name=\$matches[$num_arg]";
@@ -147,8 +148,8 @@ class Router
      */
     private function getEndpointPath(string $path)
     {
-        $regex_path = RegexHelper::cleanPath($path);
-        $matches = RegexHelper::getRegexMatches($regex_path);
+        $regex_path = RegexHelperEndpoints::cleanPath($path);
+        $matches = RegexHelperEndpoints::getRegexMatches($regex_path);
         if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
                 $regex_path = $this->getEndpointPatternPath($regex_path, $key, $pattern, $matches);
@@ -170,8 +171,7 @@ class Router
     {
         $pattern = explode(':', $pattern);
         if (count($pattern) > 1) {
-            $regex_code = RegexHelper::getRegex($pattern[1]);
-            $regex_code = "(?P<$pattern[0]>$regex_code)";
+            $regex_code = RegexHelperEndpoints::getRegex($pattern);
             $path = str_replace($matches[0][$key], $regex_code, $path);
         }
         return $path;
