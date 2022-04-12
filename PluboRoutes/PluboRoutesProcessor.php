@@ -171,10 +171,7 @@ class PluboRoutesProcessor
 
     private function checkCapabilities($user)
     {
-        $allowed_caps = $this->matched_route->getCapabilities();
-        if (is_callable($allowed_caps)) {
-            $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
-        }
+        $allowed_caps = $this->getAllowedCapabilities();
         $is_allowed = $allowed_caps ? false : true;
         foreach ((array)$allowed_caps as $allowed_cap) {
             if ($user->has_cap($allowed_cap)) {
@@ -185,6 +182,14 @@ class PluboRoutesProcessor
         if (!$is_allowed) {
             $this->forbidAccess();
         }
+    }
+
+    private function getAllowedCapabilities() {
+        $allowed_caps = $this->matched_route->getCapabilities();
+        if ($this->matched_route->hasCapabilitiesCallback()) {
+            $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
+        }
+        return $allowed_caps;
     }
 
     private function forbidAccess()
