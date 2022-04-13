@@ -194,6 +194,7 @@ class Router
         foreach ($extra_vars as $var_name => $var_value) {
             $index_string .= "&$var_name=$var_value";
             $route->addArg($var_name);
+            add_rewrite_tag("%$var_name%", '([a-z0-9-]+)');
         }
         return $index_string;
     }
