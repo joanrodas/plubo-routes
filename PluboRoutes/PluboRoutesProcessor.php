@@ -61,7 +61,6 @@ class PluboRoutesProcessor
         add_action('template_redirect', [$self, 'doRouteActions']);
         add_action('template_include', [$self, 'includeRouteTemplate']);
         add_filter('body_class', [$self, 'addBodyClasses']);
-        add_filter('query_vars', [$self, 'addExtraVars']);
     }
 
     /**
@@ -263,19 +262,5 @@ class PluboRoutesProcessor
             $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
         }
         return $classes;
-    }
-
-    /**
-     * Filter: Add extra static query vars.
-     */
-    public function addExtraVars($query_vars)
-    {
-        if ($this->matched_route instanceof Route) {
-            $route_extra_vars = $this->matched_route->getExtraVars();
-            foreach ($route_extra_vars as $extra_var) {
-                $query_vars[] = $extra_var;
-            }
-        }
-        return $query_vars;
     }
 }
