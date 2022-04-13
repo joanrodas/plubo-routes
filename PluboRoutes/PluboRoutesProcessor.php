@@ -144,8 +144,8 @@ class PluboRoutesProcessor
     {
         header('Cache-Control: no-cache, must-revalidate, max-age=0');
         $basic_auth = $this->matched_route->getBasicAuth();
-        $auth_user = $_SERVER['PHP_AUTH_USER'];
-        $auth_pass = $_SERVER['PHP_AUTH_PW'];
+        $auth_user = $_SERVER['PHP_AUTH_USER'] ?? '';
+        $auth_pass = $_SERVER['PHP_AUTH_PW'] ?? '';
         if (empty($auth_user) || empty($auth_pass)) {
             $this->unauthorized();
         }
@@ -180,9 +180,8 @@ class PluboRoutesProcessor
 
     private function executeRouteHook()
     {
-        if ($this->matched_route->isPrivate()) {
-            $user = wp_get_current_user();
-            $this->checkLoggedIn($user);
+        $user = wp_get_current_user();
+        if ($this->checkLoggedIn($user)) {
             $this->checkRoles($user);
             $this->checkCapabilities($user);
         }
@@ -192,9 +191,14 @@ class PluboRoutesProcessor
 
     private function checkLoggedIn($user)
     {
-        if (!$user->exists()) {
+        $is_logged_in = $user->exists();
+        if(!$this->matched_route->guestHasAccess() && !$is_logged_in) {
             $this->forbidAccess();
         }
+        elseif(!$this->matched_route->memberHasAccess() && $is_logged_in) {
+            $this->forbidAccess();
+        }
+        return $is_logged_in;
     }
 
     private function checkRoles($user)
