@@ -192,10 +192,8 @@ class PluboRoutesProcessor
     private function checkLoggedIn($user)
     {
         $is_logged_in = $user->exists();
-        if(!$this->matched_route->guestHasAccess() && !$is_logged_in) {
-            $this->forbidAccess();
-        }
-        elseif(!$this->matched_route->memberHasAccess() && $is_logged_in) {
+        if (!$this->matched_route->guestHasAccess() && !$is_logged_in
+          || !$this->matched_route->memberHasAccess() && $is_logged_in) {
             $this->forbidAccess();
         }
         return $is_logged_in;
