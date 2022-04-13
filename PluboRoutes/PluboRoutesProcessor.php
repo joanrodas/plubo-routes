@@ -144,14 +144,15 @@ class PluboRoutesProcessor
     {
         header('Cache-Control: no-cache, must-revalidate, max-age=0');
         $basic_auth = $this->matched_route->getBasicAuth();
-        $input_credentials = !(empty($_SERVER['PHP_AUTH_USER']) && empty($_SERVER['PHP_AUTH_PW']));
-        if (!$input_credentials) {
+        $auth_user = $_SERVER['PHP_AUTH_USER'];
+        $auth_pass = $_SERVER['PHP_AUTH_PW'];
+        if (empty($auth_user) || empty($auth_pass)) {
             $this->unauthorized();
         }
-        if (!array_key_exists($_SERVER['PHP_AUTH_USER'], $basic_auth)) {
+        if (!array_key_exists($auth_user, $basic_auth)) {
             $this->unauthorized();
         }
-        if ($_SERVER['PHP_AUTH_PW'] != $basic_auth[$_SERVER['PHP_AUTH_USER']]) {
+        if ($auth_pass != $basic_auth[$auth_user]) {
             $this->unauthorized();
         }
     }
