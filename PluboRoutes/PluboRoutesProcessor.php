@@ -57,6 +57,7 @@ class PluboRoutesProcessor
         $self = new self(new Router());
         add_action('init', [$self, 'addRoutes']);
         add_action('parse_request', [$self, 'matchRouteRequest']);
+        add_action('send_headers', [$self, 'basicAuth']);
         add_action('rest_api_init', [$self, 'addEndpoints']);
         add_action('template_redirect', [$self, 'doRouteActions']);
         add_action('template_include', [$self, 'includeRouteTemplate']);
@@ -127,7 +128,43 @@ class PluboRoutesProcessor
     }
 
     /**
-     * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
+     * Step 3: Check if route has basic Auth enabled.
+     */
+    public function basicAuth()
+    {
+        if ($this->matched_route instanceof Route) {
+            if (!$this->matched_route->hasBasicAuth()) {
+                return;
+            }
+            $this->checkBasicAuth();
+        }
+    }
+
+    private function checkBasicAuth()
+    {
+        header('Cache-Control: no-cache, must-revalidate, max-age=0');
+        $basic_auth = $this->matched_route->getBasicAuth();
+        $input_credentials = !(empty($_SERVER['PHP_AUTH_USER']) && empty($_SERVER['PHP_AUTH_PW']));
+        if (!$input_credentials) {
+            $this->unauthorized();
+        }
+        if (!array_key_exists($_SERVER['PHP_AUTH_USER'], $basic_auth)) {
+            $this->unauthorized();
+        }
+        if ($_SERVER['PHP_AUTH_PW'] != $basic_auth[$_SERVER['PHP_AUTH_USER']]) {
+            $this->unauthorized();
+        }
+    }
+
+    private function unauthorized()
+    {
+        header('HTTP/1.1 401 Authorization Required');
+        header('WWW-Authenticate: Basic realm="Access denied"');
+        exit;
+    }
+
+    /**
+     * Step 4: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
     public function doRouteActions()
     {
@@ -228,7 +265,7 @@ class PluboRoutesProcessor
     }
 
     /**
-     * Step 4: If a route of type Route was found, load the route template.
+     * Step 5: If a route of type Route was found, load the route template.
      *
      * @param string $template
      *

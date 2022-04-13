@@ -189,4 +189,26 @@ final class Route implements RouteInterface
         $query_vars = $this->config['extra_vars'] ?? [];
         return $query_vars;
     }
+
+    /**
+     * Check if route has basic auth.
+     *
+     * @return boolean
+     */
+    public function hasBasicAuth()
+    {
+        $basic_auth = $this->config['basic_auth'] ?? [];
+        return is_array($basic_auth) && !empty($basic_auth);
+    }
+
+    /**
+     * Get basic auth.
+     *
+     * @return array
+     */
+    public function getBasicAuth()
+    {
+        $basic_auth = $this->config['basic_auth'] ?? [];
+        return $basic_auth;
+    }
 }

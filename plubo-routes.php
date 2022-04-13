@@ -35,6 +35,9 @@ add_filter('plubo/routes', function ($routes) {
             'extra_vars' => [
                 'client_id' => 'number'
             ],
+            'basic_auth' => [
+                'user' => 'test'
+            ],
         )
     );
     $routes[] = new PluboRoutes\Route\RedirectRoute(
