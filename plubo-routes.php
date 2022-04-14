@@ -29,12 +29,16 @@ add_filter('plubo/routes', function ($routes) {
             return locate_template('test');
         },
         array(
-            'private' => true, //Default false
-            'redirect' => 'https://sirvelia.com',
+            'guest' => true,
+            'logged_in' => false,
+            // 'redirect' => 'https://sirvelia.com',
             'allowed_roles' => 'administrator',
             'extra_vars' => [
                 'client_id' => 'number'
             ],
+            // 'basic_auth' => [
+            //     'user' => 'testing'
+            // ],
         )
     );
     $routes[] = new PluboRoutes\Route\RedirectRoute(

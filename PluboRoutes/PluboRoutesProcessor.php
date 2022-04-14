@@ -57,6 +57,7 @@ class PluboRoutesProcessor
         $self = new self(new Router());
         add_action('init', [$self, 'addRoutes']);
         add_action('parse_request', [$self, 'matchRouteRequest']);
+        add_action('send_headers', [$self, 'basicAuth']);
         add_action('rest_api_init', [$self, 'addEndpoints']);
         add_action('template_redirect', [$self, 'doRouteActions']);
         add_action('template_include', [$self, 'includeRouteTemplate']);
@@ -127,7 +128,44 @@ class PluboRoutesProcessor
     }
 
     /**
-     * Step 3: If a route was found, execute the route's action. Or redirect if RedirectRoute.
+     * Step 3: Check if route has basic Auth enabled.
+     */
+    public function basicAuth()
+    {
+        if ($this->matched_route instanceof Route) {
+            if (!$this->matched_route->hasBasicAuth()) {
+                return;
+            }
+            $this->checkBasicAuth();
+        }
+    }
+
+    private function checkBasicAuth()
+    {
+        header('Cache-Control: no-cache, must-revalidate, max-age=0');
+        $basic_auth = $this->matched_route->getBasicAuth();
+        $auth_user = $_SERVER['PHP_AUTH_USER'] ?? '';
+        $auth_pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+        if (empty($auth_user) || empty($auth_pass)) {
+            $this->unauthorized();
+        }
+        if (!array_key_exists($auth_user, $basic_auth)) {
+            $this->unauthorized();
+        }
+        if ($auth_pass != $basic_auth[$auth_user]) {
+            $this->unauthorized();
+        }
+    }
+
+    private function unauthorized()
+    {
+        header('HTTP/1.1 401 Authorization Required');
+        header('WWW-Authenticate: Basic realm="Access denied"');
+        exit;
+    }
+
+    /**
+     * Step 4: If a route was found, execute the route's action. Or redirect if RedirectRoute.
      */
     public function doRouteActions()
     {
@@ -142,9 +180,8 @@ class PluboRoutesProcessor
 
     private function executeRouteHook()
     {
-        if ($this->matched_route->isPrivate()) {
-            $user = wp_get_current_user();
-            $this->checkLoggedIn($user);
+        $user = wp_get_current_user();
+        if ($this->checkLoggedIn($user)) {
             $this->checkRoles($user);
             $this->checkCapabilities($user);
         }
@@ -154,9 +191,12 @@ class PluboRoutesProcessor
 
     private function checkLoggedIn($user)
     {
-        if (!$user->exists()) {
+        $is_logged_in = $user->exists();
+        if (!$this->matched_route->guestHasAccess() && !$is_logged_in
+          || !$this->matched_route->memberHasAccess() && $is_logged_in) {
             $this->forbidAccess();
         }
+        return $is_logged_in;
     }
 
     private function checkRoles($user)
@@ -228,7 +268,7 @@ class PluboRoutesProcessor
     }
 
     /**
-     * Step 4: If a route of type Route was found, load the route template.
+     * Step 5: If a route of type Route was found, load the route template.
      *
      * @param string $template
      *
