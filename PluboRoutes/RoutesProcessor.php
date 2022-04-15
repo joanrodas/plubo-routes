@@ -1,8 +1,6 @@
 <?php
 namespace PluboRoutes;
 
-use PluboRoutes\Router;
-
 use PluboRoutes\Route\Route;
 use PluboRoutes\Route\RedirectRoute;
 use PluboRoutes\Route\ActionRoute;
@@ -15,7 +13,7 @@ use PluboRoutes\Route\RouteInterface;
  * @author Joan Rodas <joan@sirvelia.com>
  *
  */
-class PluboRoutesProcessor
+class RoutesProcessor
 {
     /**
      * The matched route found by the router.

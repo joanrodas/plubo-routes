@@ -29,22 +29,22 @@ WordPress routes made simple.
 
 ```php
 <?php
-use PluboRoutes\PluboRoutesProcessor;
+use PluboRoutes\RoutesProcessor;
 use PluboRoutes\Route\Route;
 use PluboRoutes\Route\RedirectRoute;
 use PluboRoutes\Route\ActionRoute;
 
-PluboRoutesProcessor::init();
+RoutesProcessor::init();
 
 add_filter('plubo/routes', function($routes) {
-  
+
   //Simple Route (template)
   $routes[] = new Route(
     'my_template',
     'newsletter/{creation:year}',
     'template_name'
   );
-  
+
   //Route with a custom function (template)
   $routes[] = new Route(
     'clients',
@@ -80,7 +80,7 @@ add_filter('plubo/routes', function($routes) {
       wp_mail( $to, $subject, $message, $headers );
     }
   );
-  
+
   return $routes;
 }); ?>
 ```

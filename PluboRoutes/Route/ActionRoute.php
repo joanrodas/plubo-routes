@@ -32,16 +32,6 @@ final class ActionRoute implements RouteInterface
     }
 
     /**
-     * Get the name of the route.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return md5($this->path);
-    }
-
-    /**
      * Get the action to be called when this route is matched.
      *
      * @return string|callable
