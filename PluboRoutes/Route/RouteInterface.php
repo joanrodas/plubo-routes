@@ -14,4 +14,5 @@ interface RouteInterface extends \Serializable
     public function hasCallback();
     public function addArg($arg);
     public function getArgs();
+    public function getExtraVars();
 }

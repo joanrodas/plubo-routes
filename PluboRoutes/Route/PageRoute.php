@@ -5,16 +5,16 @@ namespace PluboRoutes\Route;
  * A Route describes a route and its parameters.
  *
  */
-final class RedirectRoute implements RouteInterface
+final class PageRoute implements RouteInterface
 {
     use RouteTrait;
 
     /**
-     * The action that the route wants to execute.
+     * The page_id that the route wants to show.
      *
      * @var string\callable
      */
-    private $action;
+    private $page_id;
 
     /**
      * Constructor.
@@ -23,10 +23,10 @@ final class RedirectRoute implements RouteInterface
      * @param string|callable $action
      * @param array $config
      */
-    public function __construct(string $path, $action, array $config = [])
+    public function __construct(string $path, int $page_id, array $config = [])
     {
         $this->path = $path;
-        $this->action = $action;
+        $this->page_id = $page_id;
         $this->config = $config;
         $this->args = [];
     }
@@ -38,7 +38,7 @@ final class RedirectRoute implements RouteInterface
      */
     public function getAction()
     {
-        return $this->action;
+        return "plubo/route_{$this->getName()}";
     }
 
     /**
@@ -48,29 +48,26 @@ final class RedirectRoute implements RouteInterface
      */
     public function hasCallback()
     {
-        return is_callable($this->action);
+        return false;
     }
 
     /**
-     * Check if the action is a callable.
+     * Returns the page URI.
      *
-     * @return boolean
+     * @return string
      */
-    public function isExternal()
+    public function getPageUri()
     {
-        $is_external = $this->config['external'] ?? false;
-        return filter_var($is_external, FILTER_VALIDATE_BOOLEAN);
+        return get_page_uri($this->page_id);
     }
 
     /**
-     * Check if the action is a callable.
+     * Returns the page ID.
      *
-     * @return int
+     * @return string
      */
-    public function getStatus()
+    public function getPageId()
     {
-        $status = $this->config['status'] ?? 301;
-        in_array((int)$status, range(300, 308), true) or $status = 301;
-        return $status;
+        return $this->page_id;
     }
 }

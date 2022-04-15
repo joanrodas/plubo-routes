@@ -30,6 +30,16 @@ trait RouteTrait
     private $args;
 
     /**
+     * Get the name of the route.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->config['name'] ?? md5($this->path);
+    }
+
+    /**
      * Get the path to be matched.
      *
      * @return string
@@ -70,13 +80,25 @@ trait RouteTrait
     }
 
     /**
+     * Get extra query vars.
+     *
+     * @return array
+     */
+    public function getExtraVars()
+    {
+        $query_vars = $this->config['extra_vars'] ?? [];
+        return $query_vars;
+    }
+
+    /**
      * Serialize the route.
      *
      * @return string
      */
     public function serialize()
     {
-        return serialize([$this->path, $this->args]);
+
+        return serialize([$this->path, $this->getExtraVars()]);
     }
 
     /**

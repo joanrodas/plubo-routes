@@ -10,13 +10,6 @@ final class Route implements RouteInterface
     use RouteTrait;
 
     /**
-     * The name of the route.
-     *
-     * @var string
-    */
-    private $name;
-
-    /**
      * The template that the route wants to load or a callable.
      *
      * @var string\callable
@@ -26,28 +19,16 @@ final class Route implements RouteInterface
     /**
      * Constructor.
      *
-     * @param string $name
      * @param string $path
      * @param string|callable $template
      * @param array $config
      */
-    public function __construct(string $name, string $path, $template, array $config = [])
+    public function __construct(string $path, $template, array $config = [])
     {
-        $this->name = $name;
         $this->path = $path;
         $this->template = $template;
         $this->config = $config;
         $this->args = [];
-    }
-
-    /**
-     * Get the name of the route.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
@@ -187,17 +168,6 @@ final class Route implements RouteInterface
     {
         $capabilities = $this->config['allowed_caps'] ?? [];
         return $capabilities;
-    }
-
-    /**
-     * Get extra query vars.
-     *
-     * @return array
-     */
-    public function getExtraVars()
-    {
-        $query_vars = $this->config['extra_vars'] ?? [];
-        return $query_vars;
     }
 
     /**

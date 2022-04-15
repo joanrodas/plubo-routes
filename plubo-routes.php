@@ -18,24 +18,23 @@
 
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
-PluboRoutes\PluboRoutesProcessor::init();
+PluboRoutes\RoutesProcessor::init();
 
 add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\Route(
-        'clients',
-        'client/number',
+        'clients/test',
         function () {
             //Do some stuff...
-            return locate_template('test');
+            return locate_template('content');
         },
         array(
-            'guest' => true,
-            'logged_in' => false,
+            // 'guest' => true,
+            // 'logged_in' => true,
             // 'redirect' => 'https://sirvelia.com',
             'allowed_roles' => 'administrator',
-            'extra_vars' => [
-                'client_id' => 'number'
-            ],
+            // 'extra_vars' => [
+            //     'lss_page' => 'test-page'
+            // ],
             // 'basic_auth' => [
             //     'user' => 'testing'
             // ],
@@ -61,6 +60,10 @@ add_filter('plubo/routes', function ($routes) {
             wp_mail($to, $subject, $message, $headers);
         }
     );
+
+    $routes[] = new PluboRoutes\Route\PageRoute('testing/page', 2);
+    $routes[] = new PluboRoutes\Route\PageRoute('patata', 5);
+
     return $routes;
 });
 

@@ -3,6 +3,7 @@ namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
 use PluboRoutes\Route\Route;
+use PluboRoutes\Route\PageRoute;
 use PluboRoutes\Endpoint\EndpointInterface;
 use PluboRoutes\Helpers\RegexHelperRoutes;
 use PluboRoutes\Helpers\RegexHelperEndpoints;
@@ -72,6 +73,10 @@ class Router
     {
         add_rewrite_tag('%'.$this->route_variable.'%', '(.+)');
         foreach ($this->routes as $route) {
+            if ($route instanceof PageRoute) {
+              $this->addPageRule($route);
+              continue;
+            }
             $this->addRule($route);
         }
     }
@@ -143,6 +148,23 @@ class Router
             $index_string = $this->addExtraVars($route, $index_string);
         }
         add_rewrite_rule("^$regex_path$", $index_string, $position);
+    }
+
+    /**
+     * Adds a new WordPress rewrite rule for the given PageRoute.
+     *
+     * @param PageRoute  $route
+     * @param string $position
+     */
+    private function addPageRule(PageRoute $route, $position = 'top')
+    {
+        $index_string = 'index.php?pagename=' . $route->getPageUri();
+        $page_path = $route->getPath();
+        add_rewrite_rule("^$page_path$", $index_string, $position);
+        add_filter('page_link', function($link, $post_id) use ($route) {
+          if ($post_id === $route->getPageId()) $link = home_url($route->getPath());
+          return $link;
+        }, 10, 2);
     }
 
     /**
