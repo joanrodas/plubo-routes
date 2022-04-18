@@ -12,7 +12,7 @@ WordPress routes made simple.
 ✔️  Automatically flush rewrite rules when the routes change\
 ✔️  Custom redirects and action routes\
 ✔️  Easily extendable with hooks\
-✔️  Easy to use with blade templates
+✔️  Easy to use with Sage 10
 
 
 <br/>
