@@ -25,67 +25,77 @@ WordPress routes made simple.
 
 <br/>
 
+[Read the Docs](https://www.plubo.dev/docs/routing/)
+
+<br>
+
 ## Adding new routes
 
+There are different types of routes:
+
+- [Route (template)](https://www.plubo.dev/docs/routing/)
+- [RedirectRoute](https://www.plubo.dev/docs/routing/redirect-routes.html)
+- [ActionRoute](https://www.plubo.dev/docs/routing/action-routes.html)
+- [PageRoute](https://www.plubo.dev/docs/routing/page-routes.html)
+
+<br>
+
+## How to add a new route
+
+You can add new routes using the following filter:
+
 ```php
-<?php
-use PluboRoutes\RoutesProcessor;
-use PluboRoutes\Route\Route;
-use PluboRoutes\Route\RedirectRoute;
-use PluboRoutes\Route\ActionRoute;
+PluboRoutes\RoutesProcessor::init();
 
-RoutesProcessor::init();
-
-add_filter('plubo/routes', function($routes) {
-
-  //Simple Route (template)
-  $routes[] = new Route(
-    'my_template',
-    'newsletter/{creation:year}',
-    'template_name'
-  );
-
-  //Route with a custom function (template)
-  $routes[] = new Route(
-    'clients',
-    'client/{client_id:number}',
-    function($matches) {
-      $client_id = intval($matches['client_id']);
-      $client = get_user_by('id', 1);
-      //Do some stuff...
-      return locate_template( app('sage.finder')->locate('client') ); //SAGE 10 example
-    }
-  );
-
-  //External redirect, using parameters
-  $routes[] = new RedirectRoute(
-    'city/{city:word}',
-    function($matches) {
-      return 'https://www.google.com/search?q=' . $matches['city'];
-    },
-    array(
-      'status' => 301,
-      'external' => true //Default false
-    )
-  );
-
-  // Action only route
-  $routes[] = new ActionRoute(
-    'sendEmail',
-    function($matches) {
-      $to = get_option( 'admin_email' );
-      $subject = 'Hello world';
-      $message = 'This is an email!';
-      $headers = array( 'Content-Type: text/html; charset=UTF-8' );
-      wp_mail( $to, $subject, $message, $headers );
-    }
-  );
-
-  return $routes;
-}); ?>
+add_filter( 'plubo/routes', array($this, 'add_routes') );
+public function add_routes( $routes ) {
+    //Your routes
+    return $routes;
+}
 ```
 
-### Available syntax:
+<br>
+
+## Basic routes
+
+Basic routes take 3 parameters:
+
+| Parameter  | Type |
+| ------------- | ------------- |
+| **Route Path**  | String  |
+| **Template file name**  | String \| Callable  |
+| **Config**  | Array (optional)  |
+
+Examples:
+
+```php
+use PluboRoutes\Route\Route;
+
+add_filter( 'plubo/routes', array($this, 'add_routes') );
+public function add_routes( $routes ) {
+    $routes[] = new Route('clients/list', 'template_name');
+
+    //SAGE 10 example
+    $routes[] = new Route(
+        'dashboard/{subpage:slug}',
+        function($matches) {
+            $subpage = 'dashboard/' . $matches['subpage'];
+            return locate_template( app('sage.finder')->locate($subpage) );
+        },
+        [
+            'name' => 'my-route'
+        ]
+    );
+    return $routes;
+}
+```
+
+<br>
+
+## Available syntax
+
+You can use the format ***{variable_name:type}*** with any of the available types:
+
 * number (numbers only)
 * word (a-Z only)
 * slug (a valid WordPress slug)
@@ -97,36 +107,32 @@ add_filter('plubo/routes', function($routes) {
 * jwt (JWT token)
 * ip (IPv4)
 
-> You can also use custom regex patterns using the format **{variable_name:regex_patter}** like **{example:([a-z0-9-]+)}**
+> You can also use custom regex patterns using the format ***{variable_name:regex_pattern}*** like ***{author:([a-z0-9-]+)}***
 
-<br/>
+<br>
 
-## Useful hooks
+## Changing general template path
 
-You can execute custom functions in named routes:
+By default, Plubo Routes will search the template inside your theme, but you can use a hook to chenge the default path.
+
+If you use Sage 10, you could add something like this:
 
 ```php
-<?php add_action('plubo/route_{route_name}', function() {
-  //Execute code
-}); ?>
+add_filter( 'plubo/template', function($template) {
+    return app('sage.finder')->locate($template);
+});
 ```
 
-Modify the template path to suit your theme:
+<br>
+
+## Custom Actions
+
+Named routes provide a hook to execute your custom actions:
 
 ```php
-<?php add_filter( 'plubo/template', function($template) {
-  //Do some stuff
-  return $template;
-}); ?>
-```
-
-Modify the query arg name that specifies the route name:
-
-```php
-<?php add_filter( 'plubo/route_variable', function($route_variable) {
-  $route_variable = 'custom_route';
-  return $route_variable;
-}); ?>
+add_action('plubo/route_{route_name}', function($matches) {
+    //Do something
+});
 ```
 
 <br>
