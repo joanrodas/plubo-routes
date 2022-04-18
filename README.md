@@ -1,5 +1,5 @@
 <p align="center">
-  <img src='https://raw.githubusercontent.com/joanrodas/plubo-docs/main/images/plubo-routes-banner.png' alt='Plubo' />
+  <img src='https://github.com/joanrodas/plubo-docs/blob/main/src/.vuepress/public/images/plubo-routes-banner.png?raw=true' alt='Plubo Routes' />
 </p>
 
 [![GitHub stars](https://img.shields.io/github/stars/joanrodas/plubo-routes?style=for-the-badge)](https://github.com/joanrodas/plubo-routes/stargazers)
