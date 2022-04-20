@@ -191,4 +191,15 @@ final class Route implements RouteInterface
         $basic_auth = $this->config['basic_auth'] ?? [];
         return $basic_auth;
     }
+
+    /**
+     * Renders the html.
+     *
+     * @return boolean
+     */
+    public function isRender()
+    {
+        $render = $this->config['render'] ?? false;
+        return filter_var(($render != false), FILTER_VALIDATE_BOOLEAN);
+    }
 }

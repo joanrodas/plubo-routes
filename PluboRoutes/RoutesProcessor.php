@@ -277,6 +277,17 @@ class RoutesProcessor
         if (!$this->matched_route instanceof Route) {
             return $template;
         }
+        $matched_template = $this->matched_route->getTemplate();
+        if ($this->matched_route->isRender()) {
+            $template = $this->createTempFile(sys_get_temp_dir(), $this->matched_route->getName(), '.blade.php');
+            if ($this->matched_route->hasTemplateCallback()) {
+                $content = call_user_func($matched_template, $this->matched_args);
+                file_put_contents($template, $content);
+            } else {
+                file_put_contents($template, $matched_template);
+            }
+            return $template;
+        }
         if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
             $template = call_user_func($template_func, $this->matched_args);
@@ -284,6 +295,26 @@ class RoutesProcessor
             $template = locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
         }
         return $template;
+    }
+
+    private function createTempFile($dir, $prefix, $postfix)
+    {
+        // Trim trailing slashes from $dir.
+        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+        // If we don't have permission to create a directory, fail, otherwise we will be stuck in an endless loop.
+        if (!is_dir($dir) || !is_writable($dir)) {
+            return false;
+        }
+        // Make sure characters in prefix and postfix are safe.
+        if ((strpbrk($prefix, '\\/:*?"<>|') !== false) || (strpbrk($postfix, '\\/:*?"<>|') !== false)) {
+            return false;
+        }
+        $path = $dir.DIRECTORY_SEPARATOR.$prefix.$postfix;
+        $fp = @fopen($path, 'x+');
+        if ($fp) {
+            fclose($fp);
+        }
+        return $path;
     }
 
     /**
