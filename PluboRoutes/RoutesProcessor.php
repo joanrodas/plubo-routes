@@ -278,7 +278,7 @@ class RoutesProcessor
             return $template;
         }
         $matched_template = $this->matched_route->getTemplate();
-        if($this->matched_route->isRender()) {
+        if ($this->matched_route->isRender()) {
             $template = $this->createTempFile(sys_get_temp_dir(), $this->matched_route->getName(), '.blade.php');
             if ($this->matched_route->hasTemplateCallback()) {
                 $content = call_user_func($matched_template, $this->matched_args);
@@ -299,22 +299,18 @@ class RoutesProcessor
 
     private function createTempFile($dir, $prefix, $postfix)
     {
-        $maxAttempts = 1000;
         // Trim trailing slashes from $dir.
         $dir = rtrim($dir, DIRECTORY_SEPARATOR);
-        // If we don't have permission to create a directory, fail, otherwise we will
-        // be stuck in an endless loop.
-        if (!is_dir($dir) || !is_writable($dir)) return false;
+        // If we don't have permission to create a directory, fail, otherwise we will be stuck in an endless loop.
+        if (!is_dir($dir) || !is_writable($dir)) {
+            return false;
+        }
         // Make sure characters in prefix and postfix are safe.
-        if (strpbrk($prefix, '\\/:*?"<>|') !== false) return false;
-        if (strpbrk($postfix, '\\/:*?"<>|') !== false) return false;
-        // Attempt to create a random file until it works.
-        $attempts = 0;
-        do
-        {
-            $path = $dir.DIRECTORY_SEPARATOR.$prefix.mt_rand(100000, mt_getrandmax()).$postfix;
-            $fp = @fopen($path, 'x+');
-        } while (!$fp && $attempts++ < $maxAttempts);
+        if ((strpbrk($prefix, '\\/:*?"<>|') !== false) || (strpbrk($postfix, '\\/:*?"<>|') !== false)) {
+            return false;
+        }
+        $path = $dir.DIRECTORY_SEPARATOR.$prefix.$postfix;
+        $fp = @fopen($path, 'x+');
         if ($fp) {
             fclose($fp);
         }
