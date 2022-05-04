@@ -178,6 +178,7 @@ class RoutesProcessor
 
     private function executeRouteHook()
     {
+        $this->checkPermissionCallback();
         $user = wp_get_current_user();
         if ($this->checkLoggedIn($user)) {
             $this->checkRoles($user);
@@ -185,6 +186,18 @@ class RoutesProcessor
         }
         status_header(200);
         do_action($this->matched_route->getAction(), $this->matched_args);
+    }
+
+    private function checkPermissionCallback()
+    {
+        $permission_callback = $this->matched_route->getPermissionCallback();
+        if (!$permission_callback || !is_callable($permission_callback)) {
+            return;
+        }
+        $has_access = call_user_func($permission_callback, $this->matched_args);
+        if (!$has_access) {
+            $this->forbidAccess();
+        }
     }
 
     private function checkLoggedIn($user)
@@ -203,7 +216,7 @@ class RoutesProcessor
         if ($this->matched_route->hasRolesCallback()) {
             $allowed_roles = call_user_func($allowed_roles, $this->matched_args);
         }
-        if ($allowed_roles && !array_intersect((array)$user->roles, (array)$allowed_roles)) {
+        if ($allowed_roles !== false && !array_intersect((array)$user->roles, (array)$allowed_roles)) {
             $this->forbidAccess();
         }
     }
@@ -211,7 +224,10 @@ class RoutesProcessor
     private function checkCapabilities($user)
     {
         $allowed_caps = $this->getAllowedCapabilities();
-        $is_allowed = $allowed_caps ? false : true;
+        if($allowed_caps === false) {
+            return;
+        }
+        $is_allowed = false;
         foreach ((array)$allowed_caps as $allowed_cap) {
             if ($user->has_cap($allowed_cap)) {
                 $is_allowed = true;

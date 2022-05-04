@@ -40,7 +40,7 @@ abstract class Endpoint implements EndpointInterface
      *
      * @var string
      */
-    private $method;
+    protected $method;
 
     /**
      * Constructor.
