@@ -144,7 +144,7 @@ final class Route implements RouteInterface
      */
     public function getRoles()
     {
-        $roles = $this->config['allowed_roles'] ?? [];
+        $roles = $this->config['allowed_roles'] ?? false;
         return $roles;
     }
 
@@ -166,8 +166,19 @@ final class Route implements RouteInterface
      */
     public function getCapabilities()
     {
-        $capabilities = $this->config['allowed_caps'] ?? [];
+        $capabilities = $this->config['allowed_caps'] ?? false;
         return $capabilities;
+    }
+
+    /**
+     * Get the permission callback.
+     *
+     * @return boolean
+     */
+    public function getPermissionCallback()
+    {
+        $permission_callback = $this->config['permission_callback'] ?? false;
+        return ($permission_callback && is_callable($permission_callback));
     }
 
     /**
