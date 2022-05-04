@@ -178,7 +178,7 @@ final class Route implements RouteInterface
     public function getPermissionCallback()
     {
         $permission_callback = $this->config['permission_callback'] ?? false;
-        return ($permission_callback && is_callable($permission_callback));
+        return $permission_callback;
     }
 
     /**

@@ -191,7 +191,7 @@ class RoutesProcessor
     private function checkPermissionCallback()
     {
         $permission_callback = $this->matched_route->getPermissionCallback();
-        if (!$permission_callback) {
+        if (!$permission_callback || !is_callable($permission_callback)) {
             return;
         }
         $has_access = call_user_func($permission_callback, $this->matched_args);
