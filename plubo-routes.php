@@ -22,16 +22,18 @@ PluboRoutes\RoutesProcessor::init();
 
 add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\Route(
-        'clients/test',
+        'clients/testing',
         function () {
             //Do some stuff...
             return locate_template('content');
         },
         array(
             // 'guest' => true,
-            // 'logged_in' => true,
-            // 'redirect' => 'https://sirvelia.com',
-            'allowed_roles' => 'administrator',
+            // 'logged_in' => false,
+            'redirect' => 'https://sirvelia.com',
+            'permission_callback' => function($matches) {
+                return false;
+            },
             // 'extra_vars' => [
             //     'lss_page' => 'test-page'
             // ],
