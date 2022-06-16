@@ -40,6 +40,16 @@ trait RouteTrait
     }
 
     /**
+     * Get the title of the route.
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->config['title'] ?? '';
+    }
+
+    /**
      * Get the path to be matched.
      *
      * @return string

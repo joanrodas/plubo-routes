@@ -60,6 +60,7 @@ class RoutesProcessor
         add_action('template_redirect', [$self, 'doRouteActions']);
         add_action('template_include', [$self, 'includeRouteTemplate']);
         add_filter('body_class', [$self, 'addBodyClasses']);
+        add_filter('document_title_parts', [$self, 'modifyTitle']);
     }
 
     /**
@@ -347,5 +348,17 @@ class RoutesProcessor
             $classes = apply_filters('plubo/body_classes', $classes, $route_name, $this->matched_args);
         }
         return $classes;
+    }
+
+    /**
+     * Filter: If a route was found, add name as body tag.
+     */
+    public function modifyTitle($title_parts)
+    {
+        if ($this->matched_route instanceof Route) {
+            $route_title = $this->matched_route->getTitle();
+            $title_parts['title'] = $route_title ?? get_bloginfo( 'name' );
+        }
+        return $title_parts;
     }
 }
