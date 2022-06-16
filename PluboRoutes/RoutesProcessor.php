@@ -357,6 +357,10 @@ class RoutesProcessor
     {
         if ($this->matched_route instanceof Route) {
             $route_title = $this->matched_route->getTitle();
+            if (is_callable($route_title)) {
+                $title_parts['title'] = call_user_func($route_title, $this->matched_args);
+                return $title_parts;
+            }
             $title_parts['title'] = $route_title ?? get_bloginfo( 'name' );
         }
         return $title_parts;
