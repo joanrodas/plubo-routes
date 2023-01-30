@@ -116,7 +116,7 @@ abstract class Endpoint implements EndpointInterface
      */
     public function __serialize()
     {
-        return serialize([$this->path, $this->method]);
+        return [$this->path, $this->method];
     }
 
     /**
@@ -126,7 +126,6 @@ abstract class Endpoint implements EndpointInterface
      */
     public function __unserialize($data)
     {
-        $data = unserialize($data);
         $this->path = $data['path'];
         $this->method = $data['method'];
     }
