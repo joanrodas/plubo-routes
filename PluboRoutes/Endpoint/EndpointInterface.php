@@ -5,7 +5,7 @@ namespace PluboRoutes\Endpoint;
  * Route Interface.
  *
  */
-interface EndpointInterface extends \Serializable
+interface EndpointInterface
 {
     public function getNamespace();
     public function getPath();

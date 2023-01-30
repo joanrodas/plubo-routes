@@ -105,10 +105,10 @@ trait RouteTrait
      *
      * @return string
      */
-    public function serialize()
+    public function __serialize()
     {
 
-        return serialize([$this->path, $this->getExtraVars()]);
+        return [$this->path, $this->getExtraVars()];
     }
 
     /**
@@ -116,9 +116,8 @@ trait RouteTrait
      *
      * @param array
      */
-    public function unserialize($data)
+    public function __unserialize($data)
     {
-        $data = unserialize($data);
         $this->path = $data['path'];
         $this->args = $data['args'];
     }
