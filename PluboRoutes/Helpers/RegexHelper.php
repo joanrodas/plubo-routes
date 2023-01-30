@@ -6,6 +6,7 @@ abstract class RegexHelper
     const DIGIT = '([0-9])';
     const NUMBER = '([0-9]+)';
     const WORD = '([a-zA-Z]+)';
+    const TEXT = '([A-za-z0-9-%]+)';
     const DATE = '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
     const YEAR = '(\d{4})';
     const MONTH = '(0[1-9]|1[0-2])';
@@ -18,6 +19,7 @@ abstract class RegexHelper
     const AVAILABLE_REGEX = [
         'number' => self::NUMBER,
         'word' => self::WORD,
+        'text' => self::TEXT,
         'date' => self::DATE,
         'slug' => self::SLUG,
         'digit' => self::DIGIT,

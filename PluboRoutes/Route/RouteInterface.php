@@ -5,7 +5,7 @@ namespace PluboRoutes\Route;
  * Route Interface.
  *
  */
-interface RouteInterface extends \Serializable
+interface RouteInterface
 {
     public function getName();
     public function getTitle();
