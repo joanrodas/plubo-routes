@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes;
 
 use PluboRoutes\Route\Route;
@@ -36,7 +37,7 @@ class RoutesProcessor
      */
     private $router;
 
-     /**
+    /**
      * The router instance.
      *
      * @var Router
@@ -65,9 +66,9 @@ class RoutesProcessor
      * Clone not allowed.
      *
      */
-	private function __clone()
-	{
-	}    
+    private function __clone()
+    {
+    }
 
     /**
      * Initialize processor with WordPress.
@@ -75,10 +76,10 @@ class RoutesProcessor
      */
     public static function init()
     {
-        if (is_null(self::$instance)) {
-			self::$instance = new self(new Router());
-		}
-		return self::$instance;        
+        if (self::$instance === null) {
+            self::$instance = new self(new Router());
+        }
+        return self::$instance;
     }
 
     /**
@@ -138,9 +139,11 @@ class RoutesProcessor
             $this->matched_route =  $found_route;
             $this->matched_args = $found_args;
         }
-        if ($found_route instanceof \WP_Error &&
-          in_array('route_not_found', $found_route->get_error_codes())) {
-            wp_die($found_route, 'Route Not Found', ['response' => 404]);
+        if (
+            $found_route instanceof \WP_Error &&
+            in_array('route_not_found', $found_route->get_error_codes())
+        ) {
+            wp_die(esc_html('Route Not Found'), esc_html('Route Not Found'), ['response' => 404]);
         }
     }
 
@@ -150,10 +153,9 @@ class RoutesProcessor
     public function basicAuth()
     {
         if ($this->matched_route instanceof Route) {
-            if (!$this->matched_route->hasBasicAuth()) {
-                return;
+            if ($this->matched_route->hasBasicAuth()) {
+                $this->checkBasicAuth();
             }
-            $this->checkBasicAuth();
         }
     }
 
@@ -161,16 +163,19 @@ class RoutesProcessor
     {
         header('Cache-Control: no-cache, must-revalidate, max-age=0');
         $basic_auth = $this->matched_route->getBasicAuth();
-        $auth_user = $_SERVER['PHP_AUTH_USER'] ?? '';
-        $auth_pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+        $auth_user = $_SERVER['PHP_AUTH_USER'] ? wp_unslash($_SERVER['PHP_AUTH_USER']) : '';
+        $auth_pass = $_SERVER['PHP_AUTH_PW'] ? wp_unslash($_SERVER['PHP_AUTH_PW']) : '';
         if (empty($auth_user) || empty($auth_pass)) {
             $this->unauthorized();
+            exit();
         }
         if (!array_key_exists($auth_user, $basic_auth)) {
             $this->unauthorized();
+            exit();
         }
         if ($auth_pass != $basic_auth[$auth_user]) {
             $this->unauthorized();
+            exit();
         }
     }
 
@@ -178,7 +183,6 @@ class RoutesProcessor
     {
         header('HTTP/1.1 401 Authorization Required');
         header('WWW-Authenticate: Basic realm="Access denied"');
-        exit;
     }
 
     /**
@@ -222,8 +226,10 @@ class RoutesProcessor
     private function checkLoggedIn($user)
     {
         $is_logged_in = $user->exists();
-        if (!$this->matched_route->guestHasAccess() && !$is_logged_in
-          || !$this->matched_route->memberHasAccess() && $is_logged_in) {
+        if (
+            !$this->matched_route->guestHasAccess() && !$is_logged_in
+            || !$this->matched_route->memberHasAccess() && $is_logged_in
+        ) {
             $this->forbidAccess();
         }
         return $is_logged_in;
@@ -243,7 +249,7 @@ class RoutesProcessor
     private function checkCapabilities($user)
     {
         $allowed_caps = $this->getAllowedCapabilities();
-        if($allowed_caps === false) {
+        if ($allowed_caps === false) {
             return;
         }
         $is_allowed = false;
@@ -325,11 +331,9 @@ class RoutesProcessor
         }
         if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
-            $template = call_user_func($template_func, $this->matched_args);
-        } else {
-            $template = locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
+            return call_user_func($template_func, $this->matched_args);
         }
-        return $template;
+        return locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
     }
 
     private function createTempFile($dir, $prefix, $postfix)
@@ -344,10 +348,10 @@ class RoutesProcessor
         if ((strpbrk($prefix, '\\/:*?"<>|') !== false) || (strpbrk($postfix, '\\/:*?"<>|') !== false)) {
             return false;
         }
-        $path = $dir.DIRECTORY_SEPARATOR.$prefix.$postfix;
-        $fp = @fopen($path, 'x+');
-        if ($fp) {
-            fclose($fp);
+        $path = $dir . DIRECTORY_SEPARATOR . $prefix . $postfix;
+        $tmp_file = @fopen($path, 'x+');
+        if ($tmp_file) {
+            fclose($tmp_file);
         }
         return $path;
     }
@@ -379,7 +383,7 @@ class RoutesProcessor
                 $title_parts['title'] = call_user_func($route_title, $this->matched_args);
                 return $title_parts;
             }
-            $title_parts['title'] = $route_title ?? get_bloginfo( 'name' );
+            $title_parts['title'] = $route_title ?? get_bloginfo('name');
         }
         return $title_parts;
     }
