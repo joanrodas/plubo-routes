@@ -23,23 +23,20 @@ PluboRoutes\RoutesProcessor::init();
 add_filter('plubo/routes', function ($routes) {
     $routes[] = new PluboRoutes\Route\Route(
         'clients/testing',
-        function () {
-            //Do some stuff...
+        function ($matches) {
             return locate_template('content');
         },
         array(
             // 'guest' => true,
             // 'logged_in' => false,
             'redirect' => 'https://sirvelia.com',
-            'permission_callback' => function($matches) {
-                return false;
-            },
+            'permission_callback' => [null, 'check_permission'],
             // 'extra_vars' => [
             //     'lss_page' => 'test-page'
             // ],
-            // 'basic_auth' => [
-            //     'user' => 'testing'
-            // ],
+            'basic_auth' => [
+                'user' => 'testing'
+            ],
         )
     );
     $routes[] = new PluboRoutes\Route\RedirectRoute(
@@ -80,3 +77,8 @@ add_filter('plubo/endpoints', function ($endpoints) {
     );
     return $endpoints;
 });
+
+function check_permission($matches)
+{
+    return true;
+}
