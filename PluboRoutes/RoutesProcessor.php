@@ -36,6 +36,13 @@ class RoutesProcessor
      */
     private $router;
 
+     /**
+     * The router instance.
+     *
+     * @var Router
+     */
+    private static $instance = NULL;
+
     /**
      * Constructor.
      *
@@ -44,7 +51,23 @@ class RoutesProcessor
     public function __construct(Router $router)
     {
         $this->router = $router;
+        add_action('init', [$this, 'addRoutes']);
+        add_action('parse_request', [$this, 'matchRouteRequest']);
+        add_action('send_headers', [$this, 'basicAuth']);
+        add_action('rest_api_init', [$this, 'addEndpoints']);
+        add_action('template_redirect', [$this, 'doRouteActions']);
+        add_action('template_include', [$this, 'includeRouteTemplate']);
+        add_filter('body_class', [$this, 'addBodyClasses']);
+        add_filter('document_title_parts', [$this, 'modifyTitle']);
     }
+
+    /**
+     * Clone not allowed.
+     *
+     */
+	private function __clone()
+	{
+	}    
 
     /**
      * Initialize processor with WordPress.
@@ -52,15 +75,10 @@ class RoutesProcessor
      */
     public static function init()
     {
-        $self = new self(new Router());
-        add_action('init', [$self, 'addRoutes']);
-        add_action('parse_request', [$self, 'matchRouteRequest']);
-        add_action('send_headers', [$self, 'basicAuth']);
-        add_action('rest_api_init', [$self, 'addEndpoints']);
-        add_action('template_redirect', [$self, 'doRouteActions']);
-        add_action('template_include', [$self, 'includeRouteTemplate']);
-        add_filter('body_class', [$self, 'addBodyClasses']);
-        add_filter('document_title_parts', [$self, 'modifyTitle']);
+        if (is_null(self::$instance)) {
+			self::$instance = new self(new Router());
+		}
+		return self::$instance;        
     }
 
     /**

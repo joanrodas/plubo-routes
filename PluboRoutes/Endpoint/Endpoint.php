@@ -116,7 +116,10 @@ abstract class Endpoint implements EndpointInterface
      */
     public function __serialize()
     {
-        return [$this->path, $this->method];
+        return [
+            'path' => $this->path,
+            'method' => $this->method
+        ];
     }
 
     /**

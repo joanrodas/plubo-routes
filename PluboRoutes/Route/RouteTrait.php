@@ -107,8 +107,10 @@ trait RouteTrait
      */
     public function __serialize()
     {
-
-        return [$this->path, $this->getExtraVars()];
+        return [
+            'path' => $this->path,
+            'extra_vars' => $this->getExtraVars()
+        ];
     }
 
     /**
@@ -119,6 +121,6 @@ trait RouteTrait
     public function __unserialize($data)
     {
         $this->path = $data['path'];
-        $this->args = $data['args'];
+        $this->config['extra_vars'] = $data['extra_vars'];
     }
 }
