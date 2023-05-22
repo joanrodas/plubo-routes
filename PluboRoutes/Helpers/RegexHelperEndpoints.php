@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes\Helpers;
 
 class RegexHelperEndpoints extends RegexHelper

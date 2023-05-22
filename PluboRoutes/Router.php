@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
@@ -87,7 +88,7 @@ class Router
      */
     public function compileRoutes()
     {
-        add_rewrite_tag('%'.$this->route_variable.'%', '(.+)');
+        add_rewrite_tag('%' . $this->route_variable . '%', '(.+)');
         foreach ($this->routes as $route) {
             if ($route instanceof PageRoute) {
                 $this->addPageRule($route);
@@ -105,9 +106,9 @@ class Router
         foreach ($this->endpoints as $endpoint) {
             $path = $this->getEndpointPath($endpoint->getPath());
             register_rest_route($endpoint->getNamespace(), $path, [
-              'methods' => $endpoint->getMethod(),
-              'callback' => $endpoint->getConfig(),
-              'permission_callback' => $endpoint->getPermissionCallback()
+                'methods' => $endpoint->getMethod(),
+                'callback' => $endpoint->getConfig(),
+                'permission_callback' => $endpoint->getPermissionCallback()
             ]);
         }
     }
@@ -152,7 +153,7 @@ class Router
             $pattern = explode(':', $pattern);
             if (count($pattern) > 1) {
                 $name = $pattern[0];
-                $num_arg = $key+1;
+                $num_arg = $key + 1;
                 $regex_code = $this->regex_routes->getRegex($pattern[1]);
                 $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 add_rewrite_tag("%$name%", $regex_code);

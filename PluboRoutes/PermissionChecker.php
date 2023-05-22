@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes;
 
 use PluboRoutes\Route\Route;
@@ -25,6 +26,13 @@ class PermissionChecker
     private $matched_args;
 
     /**
+     * The matched args found by the router.
+     *
+     * @var \WP_User
+     */
+    private $current_user;
+
+    /**
      * Constructor.
      *
      */
@@ -32,6 +40,7 @@ class PermissionChecker
     {
         $this->matched_route = $route;
         $this->matched_args = $args;
+        $this->current_user = wp_get_current_user();
     }
 
     public function checkPermissions()
@@ -45,16 +54,15 @@ class PermissionChecker
             $this->forbidAccess();
         }
 
-        $user = wp_get_current_user();
-        if ($this->checkLoggedIn($user)) {
-            $this->checkRoles($user);
-            $this->checkCapabilities($user);
+        if ($this->checkLoggedIn()) {
+            $this->checkRoles();
+            $this->checkCapabilities();
         }
     }
 
-    private function checkLoggedIn($user)
+    private function checkLoggedIn()
     {
-        $is_logged_in = $user->exists();
+        $is_logged_in = $this->current_user->exists();
         if (
             !$this->matched_route->guestHasAccess() && !$is_logged_in
             || !$this->matched_route->memberHasAccess() && $is_logged_in
@@ -64,18 +72,18 @@ class PermissionChecker
         return $is_logged_in;
     }
 
-    private function checkRoles($user)
+    private function checkRoles()
     {
         $allowed_roles = $this->matched_route->getRoles();
         if ($this->matched_route->hasRolesCallback()) {
             $allowed_roles = call_user_func($allowed_roles, $this->matched_args);
         }
-        if ($allowed_roles !== false && !array_intersect((array)$user->roles, (array)$allowed_roles)) {
+        if ($allowed_roles !== false && !array_intersect((array)$this->current_user->roles, (array)$allowed_roles)) {
             $this->forbidAccess();
         }
     }
 
-    private function checkCapabilities($user)
+    private function checkCapabilities()
     {
         $allowed_caps = $this->getAllowedCapabilities();
         if ($allowed_caps === false) {
@@ -83,7 +91,7 @@ class PermissionChecker
         }
         $is_allowed = false;
         foreach ((array)$allowed_caps as $allowed_cap) {
-            if ($user->has_cap($allowed_cap)) {
+            if ($this->current_user->has_cap($allowed_cap)) {
                 $is_allowed = true;
                 break;
             }
