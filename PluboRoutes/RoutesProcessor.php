@@ -167,15 +167,12 @@ class RoutesProcessor
         $auth_pass = $_SERVER['PHP_AUTH_PW'] ? wp_unslash($_SERVER['PHP_AUTH_PW']) : '';
         if (empty($auth_user) || empty($auth_pass)) {
             $this->unauthorized();
-            exit();
         }
         if (!array_key_exists($auth_user, $basic_auth)) {
             $this->unauthorized();
-            exit();
         }
         if ($auth_pass != $basic_auth[$auth_user]) {
             $this->unauthorized();
-            exit();
         }
     }
 
@@ -183,6 +180,7 @@ class RoutesProcessor
     {
         header('HTTP/1.1 401 Authorization Required');
         header('WWW-Authenticate: Basic realm="Access denied"');
+        exit;
     }
 
     /**
@@ -324,9 +322,9 @@ class RoutesProcessor
             if ($this->matched_route->hasTemplateCallback()) {
                 $content = call_user_func($matched_template, $this->matched_args);
                 file_put_contents($template, $content);
-            } else {
-                file_put_contents($template, $matched_template);
+                return $template;
             }
+            file_put_contents($template, $matched_template);
             return $template;
         }
         if ($this->matched_route->hasTemplateCallback()) {

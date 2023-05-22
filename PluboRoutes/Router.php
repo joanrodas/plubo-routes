@@ -36,6 +36,20 @@ class Router
     private $route_variable;
 
     /**
+     * Regex Helper for routes.
+     *
+     * @var RegexHelperRoutes
+     */
+    private $regex_helper_routes;
+
+    /**
+     * Regex Helper for Endpoints.
+     *
+     * @var RegexHelperEndpoints
+     */
+    private $regex_helper_endpoints;
+
+    /**
      * Constructor.
      *
      */
@@ -44,6 +58,8 @@ class Router
         $this->routes = [];
         $this->endpoints = [];
         $this->route_variable = apply_filters('plubo/route_variable', 'route_name');
+        $this->regex_helper_routes = new RegexHelperRoutes();
+        $this->regex_helper_endpoints = new RegexHelperEndpoints();
     }
 
     /**
@@ -126,8 +142,8 @@ class Router
      */
     private function addRule(RouteInterface $route, $position = 'top')
     {
-        $regex_path = RegexHelperRoutes::cleanPath($route->getPath());
-        $matches = RegexHelperRoutes::getRegexMatches($regex_path);
+        $regex_path = $this->regex_helper_routes->cleanPath($route->getPath());
+        $matches = $this->regex_helper_routes->getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
         if (!$matches) {
             return;
@@ -137,7 +153,7 @@ class Router
             if (count($pattern) > 1) {
                 $name = $pattern[0];
                 $num_arg = $key+1;
-                $regex_code = RegexHelperRoutes::getRegex($pattern[1]);
+                $regex_code = $this->regex_helper_routes->getRegex($pattern[1]);
                 $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 add_rewrite_tag("%$name%", $regex_code);
                 $index_string .= "&$name=\$matches[$num_arg]";
@@ -176,8 +192,8 @@ class Router
      */
     private function getEndpointPath(string $path)
     {
-        $regex_path = RegexHelperEndpoints::cleanPath($path);
-        $matches = RegexHelperEndpoints::getRegexMatches($regex_path);
+        $regex_path = $this->regex_helper_endpoints->cleanPath($path);
+        $matches = $this->regex_helper_endpoints->getRegexMatches($regex_path);
         if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
                 $regex_path = $this->getEndpointPatternPath($regex_path, $key, $pattern, $matches);
@@ -199,7 +215,7 @@ class Router
     {
         $pattern = explode(':', $pattern);
         if (count($pattern) > 1) {
-            $regex_code = RegexHelperEndpoints::getRegex($pattern);
+            $regex_code = $this->regex_helper_endpoints->getRegex($pattern);
             $path = str_replace($matches[0][$key], $regex_code, $path);
         }
         return $path;

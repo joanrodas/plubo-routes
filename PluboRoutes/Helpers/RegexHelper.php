@@ -36,7 +36,7 @@ abstract class RegexHelper
      *
      * @param string $path
      */
-    public static function getRegexMatches(string $regex_path)
+    public function getRegexMatches(string $regex_path)
     {
         preg_match_all('#\{(.+?)\}#', $regex_path, $matches);
         return $matches;
@@ -48,7 +48,7 @@ abstract class RegexHelper
      * @param string $path
      * @return string
      */
-    public static function cleanPath(string $path)
+    public function cleanPath(string $path)
     {
         return ltrim(trim($path), '/');
     }
@@ -59,5 +59,5 @@ abstract class RegexHelper
      * @param mixed $type
      * @return string
      */
-    abstract public static function getRegex($type): string;
+    abstract public function getRegex($type): string;
 }
