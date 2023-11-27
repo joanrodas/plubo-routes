@@ -1,8 +1,6 @@
 <?php
 
 /**
- * The plugin bootstrap file
- *
  * @wordpress-plugin
  * Plugin Name:       PLUBO Routes
  * Plugin URI:        https://sirvelia.com/
@@ -16,6 +14,7 @@
  * Domain Path:       /languages
  */
 
-require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+define('PLUBO_ROUTES_PLUGIN_DIR', plugin_dir_path(__FILE__));
+require_once PLUBO_ROUTES_PLUGIN_DIR . 'vendor/autoload.php';
 
 PluboRoutes\RoutesProcessor::init();
