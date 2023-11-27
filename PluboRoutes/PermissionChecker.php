@@ -35,6 +35,8 @@ class PermissionChecker
     /**
      * Constructor.
      *
+     * @param Route $route
+     * @param array $args
      */
     public function __construct(Route $route, array $args)
     {
@@ -43,6 +45,9 @@ class PermissionChecker
         $this->current_user = wp_get_current_user();
     }
 
+    /**
+     * Check permissions for the matched route.
+     */
     public function checkPermissions()
     {
         $permission_callback = $this->matched_route->getPermissionCallback();
@@ -60,18 +65,28 @@ class PermissionChecker
         }
     }
 
+    /**
+     * Check if the user is logged in and has access based on route settings.
+     *
+     * @return bool Whether the user is logged in.
+     */
     private function checkLoggedIn()
     {
         $is_logged_in = $this->current_user->exists();
+
         if (
             !$this->matched_route->guestHasAccess() && !$is_logged_in
             || !$this->matched_route->memberHasAccess() && $is_logged_in
         ) {
             $this->forbidAccess();
         }
+
         return $is_logged_in;
     }
 
+    /**
+     * Check if the user has the required roles for the matched route.
+     */
     private function checkRoles()
     {
         $allowed_roles = $this->matched_route->getRoles();
@@ -83,6 +98,9 @@ class PermissionChecker
         }
     }
 
+    /**
+     * Check if the user has the required capabilities for the matched route.
+     */
     private function checkCapabilities()
     {
         $allowed_caps = $this->getAllowedCapabilities();
@@ -101,6 +119,11 @@ class PermissionChecker
         }
     }
 
+    /**
+     * Get the allowed capabilities for the matched route.
+     *
+     * @return mixed
+     */
     private function getAllowedCapabilities()
     {
         $allowed_caps = $this->matched_route->getCapabilities();
@@ -110,6 +133,9 @@ class PermissionChecker
         return $allowed_caps;
     }
 
+    /**
+     * Forbid access based on route settings.
+     */
     private function forbidAccess()
     {
         if ($this->matched_route->hasRedirect()) {
