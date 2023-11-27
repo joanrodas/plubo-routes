@@ -57,7 +57,7 @@ class RoutesProcessor
         add_action('send_headers', [$this, 'basicAuth']);
         add_action('rest_api_init', [$this, 'addEndpoints']);
         add_action('template_redirect', [$this, 'doRouteActions']);
-        add_action('template_include', [$this, 'includeRouteTemplate']);
+        add_filter('template_include', [$this, 'includeRouteTemplate']);
         add_filter('body_class', [$this, 'addBodyClasses']);
         add_filter('document_title_parts', [$this, 'modifyTitle']);
     }
@@ -88,6 +88,9 @@ class RoutesProcessor
     public function addRoutes()
     {
         $routes = apply_filters('plubo/routes', []);
+        if (!is_array($routes)) {
+            $routes = [];
+        }
         foreach ($routes as $route) {
             $this->router->addRoute($route);
         }
@@ -101,6 +104,9 @@ class RoutesProcessor
     public function addEndpoints()
     {
         $endpoints = apply_filters('plubo/endpoints', []);
+        if (!is_array($endpoints)) {
+            $endpoints = [];
+        }
         foreach ($endpoints as $endpoint) {
             $this->router->addEndpoint($endpoint);
         }
@@ -113,6 +119,10 @@ class RoutesProcessor
      */
     public function maybeFlushRewriteRules(array $values, string $option_name)
     {
+        if (!is_array($values)) {
+            return;
+        }
+
         $hash = md5(serialize($values));
         if ($hash != get_option($option_name)) {
             flush_rewrite_rules();
@@ -188,6 +198,9 @@ class RoutesProcessor
      */
     public function doRouteActions()
     {
+        $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
+        $permission_checker->checkPermissions();
+
         if ($this->matched_route instanceof Route) {
             $this->executeRouteHook();
         } elseif ($this->matched_route instanceof ActionRoute) {
@@ -199,9 +212,6 @@ class RoutesProcessor
 
     private function executeRouteHook()
     {
-        $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
-        $permission_checker->checkPermissions();
-
         status_header(200);
         do_action($this->matched_route->getAction(), $this->matched_args);
     }
@@ -216,6 +226,10 @@ class RoutesProcessor
 
     private function executeRedirect()
     {
+        if(!$this->matched_route instanceof RedirectRoute) {
+            exit;
+        }
+
         $redirect_to = $this->matched_route->getAction();
         if ($this->matched_route->hasCallback()) {
             $redirect_to = call_user_func($redirect_to, $this->matched_args);
@@ -256,7 +270,8 @@ class RoutesProcessor
             $template_func = $this->matched_route->getTemplate();
             return call_user_func($template_func, $this->matched_args);
         }
-        return locate_template(apply_filters('plubo/template', $this->matched_route->getTemplate()));
+
+        return $matched_template;
     }
 
     private function createTempFile($dir, $prefix, $postfix)

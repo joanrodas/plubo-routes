@@ -8,28 +8,38 @@ abstract class RegexHelper
     const NUMBER = '([0-9]+)';
     const WORD = '([a-zA-Z]+)';
     const TEXT = '([A-za-z0-9-%]+)';
+    const ALPHANUMERIC = '([a-zA-Z0-9]+)';
+    const HEXADECIMAL = '([a-fA-F0-9]+)';
+    const UUID = '([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})';
+    const FILE_PATH = '([\/\w\.-]+)';
     const DATE = '(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))';
     const YEAR = '(\d{4})';
     const MONTH = '(0[1-9]|1[0-2])';
     const DAY = '(0[1-9]|[12][0-9]|3[01])';
+    const TIME_24H_FORMAT = '(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]';
     const IP = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
     const JWT = '((?:[\w-]*\.){2}[\w-]*)';
     const SLUG = '([a-z0-9-]+)';
     const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
     const AVAILABLE_REGEX = [
+        'digit' => self::DIGIT,
         'number' => self::NUMBER,
         'word' => self::WORD,
         'text' => self::TEXT,
+        'alphanumeric' => self::ALPHANUMERIC,
+        'hex' => self::HEXADECIMAL,
+        'uuid' => self::UUID,
+        'file' => self::FILE_PATH,
         'date' => self::DATE,
-        'slug' => self::SLUG,
-        'digit' => self::DIGIT,
         'year' => self::YEAR,
         'month' => self::MONTH,
         'day' => self::DAY,
+        'time' => self::TIME_24H_FORMAT,
+        'ip' => self::IP,
         'jwt' => self::JWT,
-        'email' => self::EMAIL,
-        'ip' => self::IP
+        'slug' => self::SLUG,
+        'email' => self::EMAIL
     ];
 
     /**
