@@ -64,7 +64,7 @@ final class RedirectRoute implements RouteInterface
     }
 
     /**
-     * Check if the action is a callable.
+     * Get the status.
      *
      * @return int
      */

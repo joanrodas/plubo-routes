@@ -118,4 +118,15 @@ final class Route implements RouteInterface
         $render = $this->config['render'] ?? false;
         return filter_var(($render != false), FILTER_VALIDATE_BOOLEAN);
     }
+
+    /**
+     * Get the status.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 200;
+        return (int)$status;
+    }
 }

@@ -51,4 +51,15 @@ final class ActionRoute implements RouteInterface
     {
         return is_callable($this->action);
     }
+
+    /**
+     * Get the status.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 200;
+        return (int)$status;
+    }
 }

@@ -28,4 +28,5 @@ interface RouteInterface
 
     public function getAction();
     public function hasCallback();
+    public function getStatus();
 }

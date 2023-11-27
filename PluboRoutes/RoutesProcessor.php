@@ -19,7 +19,7 @@ class RoutesProcessor
     /**
      * The matched route found by the router.
      *
-     * @var Route
+     * @var Route|RedirectRote|ActionRoute|null
      */
     private $matched_route;
 
@@ -40,7 +40,7 @@ class RoutesProcessor
     /**
      * The router instance.
      *
-     * @var Router
+     * @var Router|null
      */
     private static $instance = NULL;
 
@@ -52,6 +52,14 @@ class RoutesProcessor
     public function __construct(Router $router)
     {
         $this->router = $router;
+        $this->initHooks();
+    }
+
+    /**
+     * Initialize hooks with WordPress.
+     */
+    private function initHooks()
+    {
         add_action('init', [$this, 'addRoutes']);
         add_action('parse_request', [$this, 'matchRouteRequest']);
         add_action('send_headers', [$this, 'basicAuth']);
@@ -88,12 +96,12 @@ class RoutesProcessor
     public function addRoutes()
     {
         $routes = apply_filters('plubo/routes', []);
-        if (!is_array($routes)) {
-            $routes = [];
-        }
+        $routes = is_array($routes) ? $routes : [];
+
         foreach ($routes as $route) {
             $this->router->addRoute($route);
         }
+
         $this->router->compileRoutes();
         $this->maybeFlushRewriteRules($routes, 'plubo-routes-hash');
     }
@@ -104,12 +112,12 @@ class RoutesProcessor
     public function addEndpoints()
     {
         $endpoints = apply_filters('plubo/endpoints', []);
-        if (!is_array($endpoints)) {
-            $endpoints = [];
-        }
+        $endpoints = is_array($endpoints) ? $endpoints : [];
+
         foreach ($endpoints as $endpoint) {
             $this->router->addEndpoint($endpoint);
         }
+
         $this->router->compileEndpoints();
         $this->maybeFlushRewriteRules($endpoints, 'plubo-endpoints-hash');
     }
@@ -133,28 +141,48 @@ class RoutesProcessor
     /**
      * Step 2: Attempts to match the current request to an added route.
      *
-     * @param WP $env
+     * @param \WP $env
      */
     public function matchRouteRequest(\WP $env)
     {
         $found_route = $this->router->match($env->query_vars);
+
         if ($found_route instanceof RouteInterface) {
-            $found_args = [];
-            $args_names = $found_route->getArgs();
-            $extra_args = $found_route->getExtraVars();
-            foreach ($args_names as $arg_name) {
-                $query_value = $env->query_vars[$arg_name] ?? ($extra_args[$arg_name] ?? false);
-                $found_args[$arg_name] = $query_value;
-            }
-            $this->matched_route =  $found_route;
-            $this->matched_args = $found_args;
+            $this->processMatchedRoute($found_route, $env);
         }
-        if (
-            $found_route instanceof \WP_Error &&
-            in_array('route_not_found', $found_route->get_error_codes())
-        ) {
-            wp_die(esc_html('Route Not Found'), esc_html('Route Not Found'), ['response' => 404]);
+
+        if ($found_route instanceof \WP_Error && in_array('route_not_found', $found_route->get_error_codes())) {
+            $this->handleRouteNotFound();
         }
+    }
+
+    /**
+     * Process matched route and set matched route and args.
+     *
+     * @param RouteInterface $found_route
+     * @param \WP $env
+     */
+    private function processMatchedRoute(RouteInterface $found_route, \WP $env)
+    {
+        $found_args = [];
+        $args_names = $found_route->getArgs();
+        $extra_args = $found_route->getExtraVars();
+
+        foreach ($args_names as $arg_name) {
+            $query_value = $env->query_vars[$arg_name] ?? ($extra_args[$arg_name] ?? false);
+            $found_args[$arg_name] = $query_value;
+        }
+
+        $this->matched_route = $found_route;
+        $this->matched_args = $found_args;
+    }
+
+    /**
+     * Handle route not found error.
+     */
+    private function handleRouteNotFound()
+    {
+        wp_die(esc_html('Route Not Found'), esc_html('Route Not Found'), ['response' => 404]);
     }
 
     /**
@@ -162,30 +190,33 @@ class RoutesProcessor
      */
     public function basicAuth()
     {
-        if ($this->matched_route instanceof Route) {
-            if ($this->matched_route->hasBasicAuth()) {
-                $this->checkBasicAuth();
-            }
+        if ($this->matched_route instanceof Route && $this->matched_route->hasBasicAuth()) {
+            $this->checkBasicAuth();
         }
     }
 
+    /**
+     * Check basic authentication for the matched route.
+     */
     private function checkBasicAuth()
     {
         header('Cache-Control: no-cache, must-revalidate, max-age=0');
         $basic_auth = $this->matched_route->getBasicAuth();
         $auth_user = isset($_SERVER['PHP_AUTH_USER']) ? wp_unslash($_SERVER['PHP_AUTH_USER']) : '';
         $auth_pass = isset($_SERVER['PHP_AUTH_PW']) ? wp_unslash($_SERVER['PHP_AUTH_PW']) : '';
-        if (empty($auth_user) || empty($auth_pass)) {
-            $this->unauthorized();
-        }
-        if (!array_key_exists($auth_user, $basic_auth)) {
-            $this->unauthorized();
-        }
-        if ($auth_pass != $basic_auth[$auth_user]) {
+
+        if (
+            empty($auth_user) || empty($auth_pass)
+            || !array_key_exists($auth_user, $basic_auth)
+            || $auth_pass != $basic_auth[$auth_user]
+        ) {
             $this->unauthorized();
         }
     }
 
+    /**
+     * Handle unauthorized access.
+     */
     private function unauthorized()
     {
         header('HTTP/1.1 401 Authorization Required');
@@ -198,35 +229,52 @@ class RoutesProcessor
      */
     public function doRouteActions()
     {
+        if ($this->matched_route instanceof Route || $this->matched_route instanceof ActionRoute || $this->matched_route instanceof RedirectRoute) {
+            $this->executeRouteActions();
+        }
+    }
+
+    /**
+     * Execute actions based on the type of matched route.
+     */
+    private function executeRouteActions()
+    {
+        $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
+        $permission_checker->checkPermissions();
+
         if ($this->matched_route instanceof Route) {
-            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
-            $permission_checker->checkPermissions();
             $this->executeRouteHook();
         } elseif ($this->matched_route instanceof ActionRoute) {
-            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
-            $permission_checker->checkPermissions();
             $this->executeRouteFunction();
         } elseif ($this->matched_route instanceof RedirectRoute) {
-            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
-            $permission_checker->checkPermissions();
             $this->executeRedirect();
         }
     }
 
+    /**
+     * Execute route hook action.
+     */
     private function executeRouteHook()
     {
-        status_header(200);
+        status_header($this->matched_route->getStatus());
         do_action($this->matched_route->getAction(), $this->matched_args);
     }
 
+    /**
+     * Execute route function action.
+     */
     private function executeRouteFunction()
     {
+        status_header($this->matched_route->getStatus());
         $action = $this->matched_route->getAction();
         if ($this->matched_route->hasCallback()) {
             $action = call_user_func($action, $this->matched_args);
         }
     }
 
+    /**
+     * Execute redirect action.
+     */
     private function executeRedirect()
     {
         if (!$this->matched_route instanceof RedirectRoute) {
@@ -258,6 +306,7 @@ class RoutesProcessor
         if (!$this->matched_route instanceof Route) {
             return $template;
         }
+
         $matched_template = $this->matched_route->getTemplate();
         if ($this->matched_route->isRender()) {
             $template = $this->createTempFile(sys_get_temp_dir(), $this->matched_route->getName(), '.blade.php');
@@ -277,28 +326,46 @@ class RoutesProcessor
         return $matched_template;
     }
 
-    private function createTempFile($dir, $prefix, $postfix)
+    /**
+     * Create a temporary file.
+     *
+     * @param string $dir
+     * @param string $prefix
+     * @param string $postfix
+     *
+     * @return string|false
+     */
+    private function createTempFile(string $dir, string $prefix, string $postfix)
     {
         // Trim trailing slashes from $dir.
         $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+
         // If we don't have permission to create a directory, fail, otherwise we will be stuck in an endless loop.
         if (!is_dir($dir) || !is_writable($dir)) {
             return false;
         }
+
         // Make sure characters in prefix and postfix are safe.
         if ((strpbrk($prefix, '\\/:*?"<>|') !== false) || (strpbrk($postfix, '\\/:*?"<>|') !== false)) {
             return false;
         }
+
         $path = $dir . DIRECTORY_SEPARATOR . $prefix . $postfix;
         $tmp_file = @fopen($path, 'x+');
+
         if ($tmp_file) {
             fclose($tmp_file);
         }
+
         return $path;
     }
 
     /**
      * Filter: If a route was found, add name as body tag.
+     *
+     * @param array $classes
+     *
+     * @return array
      */
     public function addBodyClasses($classes)
     {
@@ -314,7 +381,11 @@ class RoutesProcessor
     }
 
     /**
-     * Filter: If a route was found, add name as body tag.
+     * Filter: If a route was found, modify the title.
+     *
+     * @param array $title_parts
+     *
+     * @return array
      */
     public function modifyTitle($title_parts)
     {

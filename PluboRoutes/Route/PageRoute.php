@@ -71,4 +71,15 @@ final class PageRoute implements RouteInterface
     {
         return $this->page_id;
     }
+
+    /**
+     * Get the status.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 200;
+        return (int)$status;
+    }
 }
