@@ -198,14 +198,17 @@ class RoutesProcessor
      */
     public function doRouteActions()
     {
-        $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
-        $permission_checker->checkPermissions();
-
         if ($this->matched_route instanceof Route) {
+            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
+            $permission_checker->checkPermissions();
             $this->executeRouteHook();
         } elseif ($this->matched_route instanceof ActionRoute) {
+            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
+            $permission_checker->checkPermissions();
             $this->executeRouteFunction();
         } elseif ($this->matched_route instanceof RedirectRoute) {
+            $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
+            $permission_checker->checkPermissions();
             $this->executeRedirect();
         }
     }
@@ -226,7 +229,7 @@ class RoutesProcessor
 
     private function executeRedirect()
     {
-        if(!$this->matched_route instanceof RedirectRoute) {
+        if (!$this->matched_route instanceof RedirectRoute) {
             exit;
         }
 
