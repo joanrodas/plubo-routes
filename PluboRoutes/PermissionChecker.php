@@ -54,7 +54,7 @@ class PermissionChecker
         if (!$permission_callback || !is_callable($permission_callback)) {
             return;
         }
-        $has_access = call_user_func($permission_callback, $this->matched_args);
+        $has_access = $permission_callback($this->matched_args);
         if (!$has_access) {
             $this->forbidAccess();
         }
@@ -91,7 +91,7 @@ class PermissionChecker
     {
         $allowed_roles = $this->matched_route->getRoles();
         if ($this->matched_route->hasRolesCallback()) {
-            $allowed_roles = call_user_func($allowed_roles, $this->matched_args);
+            $allowed_roles = $allowed_roles($this->matched_args);
         }
         if ($allowed_roles !== false && !array_intersect((array)$this->current_user->roles, (array)$allowed_roles)) {
             $this->forbidAccess();
@@ -128,7 +128,7 @@ class PermissionChecker
     {
         $allowed_caps = $this->matched_route->getCapabilities();
         if ($this->matched_route->hasCapabilitiesCallback()) {
-            $allowed_caps = call_user_func($allowed_caps, $this->matched_args);
+            $allowed_caps = $allowed_caps($this->matched_args);
         }
         return $allowed_caps;
     }

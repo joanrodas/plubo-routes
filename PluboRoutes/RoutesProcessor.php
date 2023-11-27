@@ -277,7 +277,7 @@ class RoutesProcessor
         status_header($this->matched_route->getStatus());
         $action = $this->matched_route->getAction();
         if ($this->matched_route->hasCallback()) {
-            $action = call_user_func($action, $this->matched_args);
+            $action = $action($this->matched_args);
         }
     }
 
@@ -292,7 +292,7 @@ class RoutesProcessor
 
         $redirect_to = $this->matched_route->getAction();
         if ($this->matched_route->hasCallback()) {
-            $redirect_to = call_user_func($redirect_to, $this->matched_args);
+            $redirect_to = $redirect_to($this->matched_args);
         }
         nocache_headers();
         if ($this->matched_route->isExternal()) {
@@ -320,16 +320,14 @@ class RoutesProcessor
         if ($this->matched_route->isRender()) {
             $template = $this->createTempFile(sys_get_temp_dir(), $this->matched_route->getName(), '.blade.php');
             if ($this->matched_route->hasTemplateCallback()) {
-                $content = call_user_func($matched_template, $this->matched_args);
-                file_put_contents($template, $content);
-                return $template;
+                $matched_template = $matched_template($this->matched_args);
             }
             file_put_contents($template, $matched_template);
             return $template;
         }
         if ($this->matched_route->hasTemplateCallback()) {
             $template_func = $this->matched_route->getTemplate();
-            return call_user_func($template_func, $this->matched_args);
+            return $template_func($this->matched_args);
         }
 
         return $matched_template;
@@ -400,7 +398,7 @@ class RoutesProcessor
     {
         if ($this->matched_route instanceof Route) {
             $route_title = $this->matched_route->getTitle();
-            $route_title = is_callable($route_title) ? call_user_func($route_title, $this->matched_args) : $route_title;
+            $route_title = is_callable($route_title) ? $route_title($this->matched_args) : $route_title;
             $title_parts['title'] = $route_title ?? get_bloginfo('name');
             $title_parts = apply_filters('plubo/title_parts', $title_parts, $route_title, $this->matched_args);
         }
