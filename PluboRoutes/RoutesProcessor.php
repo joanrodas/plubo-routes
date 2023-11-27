@@ -209,8 +209,8 @@ class RoutesProcessor
     {
         header('Cache-Control: no-cache, must-revalidate, max-age=0');
         $basic_auth = $this->matched_route->getBasicAuth();
-        $auth_user = isset($_SERVER['PHP_AUTH_USER']) ? wp_unslash($_SERVER['PHP_AUTH_USER']) : '';
-        $auth_pass = isset($_SERVER['PHP_AUTH_PW']) ? wp_unslash($_SERVER['PHP_AUTH_PW']) : '';
+        $auth_user = isset($_SERVER['PHP_AUTH_USER']) ? wp_unslash(sanitize_text_field($_SERVER['PHP_AUTH_USER'])) : '';
+        $auth_pass = isset($_SERVER['PHP_AUTH_PW']) ? wp_unslash(sanitize_text_field($_SERVER['PHP_AUTH_PW'])) : '';
 
         if (
             empty($auth_user) || empty($auth_pass)
@@ -226,9 +226,7 @@ class RoutesProcessor
      */
     private function unauthorized()
     {
-        header('HTTP/1.1 401 Authorization Required');
-        header('WWW-Authenticate: Basic realm="Access denied"');
-        exit;
+        wp_die(esc_html('Unauthorized Access'), esc_html('Unauthorized Access'), ['response' => 401]);
     }
 
     /**
@@ -287,7 +285,7 @@ class RoutesProcessor
     private function executeRedirect()
     {
         if (!$this->matched_route instanceof RedirectRoute) {
-            exit;
+            wp_die();
         }
 
         $redirect_to = $this->matched_route->getAction();
@@ -296,11 +294,11 @@ class RoutesProcessor
         }
         nocache_headers();
         if ($this->matched_route->isExternal()) {
-            wp_redirect($redirect_to, $this->matched_route->getStatus());
-            exit;
+            wp_redirect(esc_url_raw($redirect_to), $this->matched_route->getStatus());
+            wp_die();
         }
         wp_safe_redirect(home_url($redirect_to), $this->matched_route->getStatus());
-        exit;
+        wp_die();
     }
 
     /**

@@ -75,7 +75,7 @@ final class Route implements RouteInterface
         // Check if a custom directory is provided
         if ($custom_directory) {
             $customTemplate = trailingslashit($custom_directory) . $template_name;
-            if (file_exists($customTemplate)) {
+            if (is_readable($customTemplate)) {
                 return $customTemplate;
             }
         }

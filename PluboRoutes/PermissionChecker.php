@@ -140,9 +140,9 @@ class PermissionChecker
     {
         if ($this->matched_route->hasRedirect()) {
             wp_redirect($this->matched_route->getRedirect(), $this->matched_route->getNotAllowedStatus());
-            exit;
+            wp_die();
         }
         status_header($this->matched_route->getNotAllowedStatus());
-        exit;
+        wp_die();
     }
 }
