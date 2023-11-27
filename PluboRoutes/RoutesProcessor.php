@@ -295,10 +295,10 @@ class RoutesProcessor
         nocache_headers();
         if ($this->matched_route->isExternal()) {
             wp_redirect(esc_url_raw($redirect_to), $this->matched_route->getStatus());
-            wp_die();
+            exit;
         }
         wp_safe_redirect(home_url($redirect_to), $this->matched_route->getStatus());
-        wp_die();
+        exit;
     }
 
     /**

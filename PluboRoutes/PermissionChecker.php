@@ -139,8 +139,8 @@ class PermissionChecker
     private function forbidAccess()
     {
         if ($this->matched_route->hasRedirect()) {
-            wp_redirect($this->matched_route->getRedirect(), $this->matched_route->getNotAllowedStatus());
-            wp_die();
+            wp_redirect(esc_url_raw($this->matched_route->getRedirect()), $this->matched_route->getNotAllowedStatus());
+            exit;
         }
         status_header($this->matched_route->getNotAllowedStatus());
         wp_die();
