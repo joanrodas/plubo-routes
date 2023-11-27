@@ -87,6 +87,10 @@ class RoutesProcessor
         if (self::$instance === null) {
             self::$instance = new self(new Router());
         }
+
+        // Custom action for router initialization
+        do_action('plubo/router_init');
+
         return self::$instance;
     }
 
@@ -175,6 +179,9 @@ class RoutesProcessor
 
         $this->matched_route = $found_route;
         $this->matched_args = $found_args;
+
+        // Action hook after matching route request
+        do_action('plubo/after_matching_route_request', $this->matched_route, $this->matched_args, $extra_args, $env);
     }
 
     /**
@@ -230,6 +237,8 @@ class RoutesProcessor
     public function doRouteActions()
     {
         if ($this->matched_route instanceof Route || $this->matched_route instanceof ActionRoute || $this->matched_route instanceof RedirectRoute) {
+            // Action hook before executing route actions
+            do_action('plubo/before_executing_route_actions', $this->matched_route, $this->matched_args);
             $this->executeRouteActions();
         }
     }
@@ -391,12 +400,11 @@ class RoutesProcessor
     {
         if ($this->matched_route instanceof Route) {
             $route_title = $this->matched_route->getTitle();
-            if (is_callable($route_title)) {
-                $title_parts['title'] = call_user_func($route_title, $this->matched_args);
-                return $title_parts;
-            }
+            $route_title = is_callable($route_title) ? call_user_func($route_title, $this->matched_args) : $route_title;
             $title_parts['title'] = $route_title ?? get_bloginfo('name');
+            $title_parts = apply_filters('plubo/title_parts', $title_parts, $route_title, $this->matched_args);
         }
+
         return $title_parts;
     }
 }
