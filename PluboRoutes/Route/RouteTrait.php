@@ -130,7 +130,7 @@ trait RouteTrait
      */
     public function hasRedirect()
     {
-        $redirect = $this->config['redirect'] ?? true;
+        $redirect = $this->config['redirect'] ?? false;
         return filter_var(($redirect != false), FILTER_VALIDATE_BOOLEAN);
     }
 

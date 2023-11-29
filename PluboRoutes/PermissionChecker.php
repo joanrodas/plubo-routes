@@ -3,6 +3,7 @@
 namespace PluboRoutes;
 
 use PluboRoutes\Route\Route;
+use PluboRoutes\Route\RouteInterface;
 
 /**
  * The PermissionChecker class is responsible for checking roles, capabilities and custom permissions
@@ -35,10 +36,10 @@ class PermissionChecker
     /**
      * Constructor.
      *
-     * @param Route $route
+     * @param RouteInterface $route
      * @param array $args
      */
-    public function __construct(Route $route, array $args)
+    public function __construct(RouteInterface $route, array $args)
     {
         $this->matched_route = $route;
         $this->matched_args = $args;
@@ -107,6 +108,7 @@ class PermissionChecker
         if ($allowed_caps === false) {
             return;
         }
+        
         $is_allowed = false;
         foreach ((array)$allowed_caps as $allowed_cap) {
             if ($this->current_user->has_cap($allowed_cap)) {
