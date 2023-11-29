@@ -16,11 +16,9 @@ abstract class RegexHelper
     const YEAR = '(\d{4})';
     const MONTH = '(0[1-9]|1[0-2])';
     const DAY = '(0[1-9]|[12][0-9]|3[01])';
-    const TIME_24H_FORMAT = '(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]';
     const IP = '(([0-9]{1,3}\.){3}[0-9]{1,3})';
     const JWT = '((?:[\w-]*\.){2}[\w-]*)';
     const SLUG = '([a-z0-9-]+)';
-    const EMAIL = '([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}';
 
     const AVAILABLE_REGEX = [
         'digit' => self::DIGIT,
@@ -35,11 +33,9 @@ abstract class RegexHelper
         'year' => self::YEAR,
         'month' => self::MONTH,
         'day' => self::DAY,
-        'time' => self::TIME_24H_FORMAT,
         'ip' => self::IP,
         'jwt' => self::JWT,
         'slug' => self::SLUG,
-        'email' => self::EMAIL
     ];
 
     /**
