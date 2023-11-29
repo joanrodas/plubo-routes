@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes\Route;
 
 /**
@@ -49,5 +50,16 @@ final class ActionRoute implements RouteInterface
     public function hasCallback()
     {
         return is_callable($this->action);
+    }
+
+    /**
+     * Get the status.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 200;
+        return (int)$status;
     }
 }

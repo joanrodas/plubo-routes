@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes;
 
 use PluboRoutes\Route\RouteInterface;
@@ -36,6 +37,20 @@ class Router
     private $route_variable;
 
     /**
+     * Regex Helper for routes.
+     *
+     * @var RegexHelperRoutes
+     */
+    private $regex_routes;
+
+    /**
+     * Regex Helper for Endpoints.
+     *
+     * @var RegexHelperEndpoints
+     */
+    private $regex_endpoints;
+
+    /**
      * Constructor.
      *
      */
@@ -44,6 +59,8 @@ class Router
         $this->routes = [];
         $this->endpoints = [];
         $this->route_variable = apply_filters('plubo/route_variable', 'route_name');
+        $this->regex_routes = new RegexHelperRoutes();
+        $this->regex_endpoints = new RegexHelperEndpoints();
     }
 
     /**
@@ -71,7 +88,8 @@ class Router
      */
     public function compileRoutes()
     {
-        add_rewrite_tag('%'.$this->route_variable.'%', '(.+)');
+        add_rewrite_tag('%' . $this->route_variable . '%', '(.+)');
+
         foreach ($this->routes as $route) {
             if ($route instanceof PageRoute) {
                 $this->addPageRule($route);
@@ -89,9 +107,9 @@ class Router
         foreach ($this->endpoints as $endpoint) {
             $path = $this->getEndpointPath($endpoint->getPath());
             register_rest_route($endpoint->getNamespace(), $path, [
-              'methods' => $endpoint->getMethod(),
-              'callback' => $endpoint->getConfig(),
-              'permission_callback' => $endpoint->getPermissionCallback()
+                'methods' => $endpoint->getMethod(),
+                'callback' => $endpoint->getConfig(),
+                'permission_callback' => $endpoint->getPermissionCallback()
             ]);
         }
     }
@@ -102,19 +120,21 @@ class Router
      *
      * @param array $query_variables
      *
-     * @return RouteInterface|WP_Error
+     * @return RouteInterface|\WP_Error
      */
     public function match(array $query_variables)
     {
         if (empty($query_variables[$this->route_variable])) {
             return new \WP_Error('missing_route_variable');
         }
+
         $route_name = $query_variables[$this->route_variable];
         foreach ($this->routes as $route) {
             if ($route->getName() === $route_name) {
                 return $route;
             }
         }
+
         return new \WP_Error('route_not_found');
     }
 
@@ -126,18 +146,20 @@ class Router
      */
     private function addRule(RouteInterface $route, $position = 'top')
     {
-        $regex_path = RegexHelperRoutes::cleanPath($route->getPath());
-        $matches = RegexHelperRoutes::getRegexMatches($regex_path);
+        $regex_path = $this->regex_routes->cleanPath($route->getPath());
+        $matches = $this->regex_routes->getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
+
         if (!$matches) {
             return;
         }
+
         foreach ($matches[1] as $key => $pattern) {
             $pattern = explode(':', $pattern);
             if (count($pattern) > 1) {
                 $name = $pattern[0];
-                $num_arg = $key+1;
-                $regex_code = RegexHelperRoutes::getRegex($pattern[1]);
+                $num_arg = $key + 1;
+                $regex_code = $this->regex_routes->getRegex($pattern[1]);
                 $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 add_rewrite_tag("%$name%", $regex_code);
                 $index_string .= "&$name=\$matches[$num_arg]";
@@ -160,6 +182,7 @@ class Router
     {
         $index_string = 'index.php?pagename=' . $route->getPageUri();
         $page_path = $route->getPath();
+
         add_rewrite_rule("^$page_path$", $index_string, $position);
         add_filter('page_link', function ($link, $post_id) use ($route) {
             if ($post_id === $route->getPageId()) {
@@ -173,16 +196,20 @@ class Router
      * Get translated Regex path for an endpoint route.
      *
      * @param string $path
+     *
+     * @return string
      */
     private function getEndpointPath(string $path)
     {
-        $regex_path = RegexHelperEndpoints::cleanPath($path);
-        $matches = RegexHelperEndpoints::getRegexMatches($regex_path);
+        $regex_path = $this->regex_endpoints->cleanPath($path);
+        $matches = $this->regex_endpoints->getRegexMatches($regex_path);
+
         if ($matches) {
             foreach ($matches[1] as $key => $pattern) {
                 $regex_path = $this->getEndpointPatternPath($regex_path, $key, $pattern, $matches);
             }
         }
+
         return $regex_path;
     }
 
@@ -193,15 +220,18 @@ class Router
      * @param int $key
      * @param string $pattern
      * @param array $matches
-     * @return string $regex_path
+     *
+     * @return string
      */
     private function getEndpointPatternPath(string $path, int $key, string $pattern, array $matches)
     {
         $pattern = explode(':', $pattern);
+
         if (count($pattern) > 1) {
-            $regex_code = RegexHelperEndpoints::getRegex($pattern);
+            $regex_code = $this->regex_endpoints->getRegex($pattern);
             $path = str_replace($matches[0][$key], $regex_code, $path);
         }
+
         return $path;
     }
 
@@ -210,16 +240,19 @@ class Router
      *
      * @param Route $route
      * @param string $index_string
-     * @return string $index_string
+     *
+     * @return string
      */
     private function addExtraVars(Route $route, string $index_string)
     {
         $extra_vars = $route->getExtraVars();
+
         foreach ($extra_vars as $var_name => $var_value) {
             $index_string .= "&$var_name=$var_value";
             $route->addArg($var_name);
             add_rewrite_tag("%$var_name%", '([a-z0-9-]+)');
         }
+        
         return $index_string;
     }
 }

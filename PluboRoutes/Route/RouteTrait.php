@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes\Route;
 
 /**
@@ -98,6 +99,116 @@ trait RouteTrait
     {
         $query_vars = $this->config['extra_vars'] ?? [];
         return $query_vars;
+    }
+
+    /**
+     * Check if guests have access.
+     *
+     * @return boolean
+     */
+    public function guestHasAccess()
+    {
+        $guest_has_access = $this->config['guest'] ?? true;
+        return filter_var($guest_has_access, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Check if a logged in user has access.
+     *
+     * @return boolean
+     */
+    public function memberHasAccess()
+    {
+        $member_has_access = $this->config['logged_in'] ?? true;
+        return filter_var($member_has_access, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Check if the route has a redirect if access not allowed.
+     *
+     * @return boolean
+     */
+    public function hasRedirect()
+    {
+        $redirect = $this->config['redirect'] ?? false;
+        return filter_var(($redirect != false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Get the http status if access not allowed.
+     *
+     * @return int
+     */
+    public function getNotAllowedStatus()
+    {
+        $status = $this->hasRedirect() ? 302 : 403;
+        return $this->config['forbidden_status'] ?? $status;
+    }
+
+    /**
+     * Get the redirect URL.
+     *
+     * @return int
+     */
+    public function getRedirect()
+    {
+        $redirect = $this->config['redirect'] ?? home_url();
+        return $redirect;
+    }
+
+    /**
+     * Check if the roles option is a callable.
+     *
+     * @return boolean
+     */
+    public function hasRolesCallback()
+    {
+        $roles = $this->config['allowed_roles'] ?? [];
+        return is_callable($roles);
+    }
+
+    /**
+     * Get the allowed roles.
+     *
+     * @return array|string
+     */
+    public function getRoles()
+    {
+        $roles = $this->config['allowed_roles'] ?? false;
+        return $roles;
+    }
+
+    /**
+     * Check if the capabilities option is a callable.
+     *
+     * @return boolean
+     */
+    public function hasCapabilitiesCallback()
+    {
+        $capabilities = $this->config['allowed_caps'] ?? [];
+        return is_callable($capabilities);
+    }
+
+    /**
+     * Get the allowed capabilities.
+     *
+     * @return array|string
+     */
+    public function getCapabilities()
+    {
+        $capabilities = $this->config['allowed_caps'] ?? false;
+        return $capabilities;
+    }
+
+    /**
+     * Get the permission callback.
+     *
+     * @return callable
+     */
+    public function getPermissionCallback()
+    {
+        $permission_callback = $this->config['permission_callback'] ?? '__return_true';
+        return $permission_callback;
     }
 
     /**

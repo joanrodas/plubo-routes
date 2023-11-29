@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes\Endpoint;
 
 /**
@@ -56,7 +57,6 @@ abstract class Endpoint implements EndpointInterface
         $this->path = $path;
         $this->config = $config;
         $this->permission_callback = $permission_callback ?? '__return_true';
-        $this->args = [];
     }
 
     /**

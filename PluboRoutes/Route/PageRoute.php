@@ -1,4 +1,5 @@
 <?php
+
 namespace PluboRoutes\Route;
 
 /**
@@ -69,5 +70,16 @@ final class PageRoute implements RouteInterface
     public function getPageId()
     {
         return $this->page_id;
+    }
+
+    /**
+     * Get the status.
+     *
+     * @return int
+     */
+    public function getStatus()
+    {
+        $status = $this->config['status'] ?? 200;
+        return (int)$status;
     }
 }
