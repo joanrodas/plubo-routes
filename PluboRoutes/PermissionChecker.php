@@ -143,6 +143,6 @@ class PermissionChecker
             exit;
         }
         status_header($this->matched_route->getNotAllowedStatus());
-        wp_die();
+        exit();
     }
 }

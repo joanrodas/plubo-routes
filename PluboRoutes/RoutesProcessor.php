@@ -285,7 +285,7 @@ class RoutesProcessor
     private function executeRedirect()
     {
         if (!$this->matched_route instanceof RedirectRoute) {
-            wp_die();
+            exit;
         }
 
         $redirect_to = $this->matched_route->getAction();
