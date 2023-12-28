@@ -70,6 +70,8 @@ final class Route implements RouteInterface
     public function getTemplate()
     {
         $template_name = $this->template;
+        if($this->hasTemplateCallback()) return $template_name;
+        
         $custom_directory = $this->config['template_path'] ?? '';
 
         // Check if a custom directory is provided
