@@ -90,15 +90,6 @@ class Router
     {
         add_rewrite_tag('%' . $this->route_variable . '%', '(.+)');
 
-        // Create rewrite rules with a filter
-        add_filter('generate_rewrite_rules', [$this, 'addCustomRewriteRules']);
-    }
-
-    /**
-     * Generate custom rewrite rules and filter them.
-     */
-    public function addCustomRewriteRules($wp_rewrite)
-    {
         $rules = [];
 
         foreach ($this->routes as $route) {
@@ -112,7 +103,6 @@ class Router
 
         // Apply custom filter for Polylang
         $rules = apply_filters('plubo_routes_rewrite_rules', $rules);
-        $wp_rewrite->rules = array_merge($rules, $wp_rewrite->rules);
 
         // Add the rules to Polylang's filter
         add_filter('pll_rewrite_rules', function($pll_rules) use ($rules) {
@@ -165,7 +155,7 @@ class Router
      * @param RouteInterface  $route
      * @param string $position
      */
-    private function addRule(RouteInterface $route)
+    private function addRule(RouteInterface $route, $position = 'top')
     {
         $regex_path = $this->regex_routes->cleanPath($route->getPath());
         $matches = $this->regex_routes->getRegexMatches($regex_path);
@@ -176,11 +166,13 @@ class Router
             return $rules;
         }
 
+
         // Add language param if Polylang is active
         if (function_exists('pll_current_language')) {
             $languages = \pll_languages_list();
             $language_regex = implode('|', $languages);
-            $regex_path = "($language_regex)/" . $regex_path;
+            // Use non-capturing group for the slash and capture only the language code
+            $regex_path = "(?:($language_regex)/)?" . $regex_path;
             $index_string .= "&lang=\$matches[1]";
         }
 
@@ -200,7 +192,8 @@ class Router
             $index_string = $this->addExtraVars($route, $index_string);
         }
         
-        //add_rewrite_rule("^$regex_path$", $index_string, $position);
+        add_rewrite_rule("^$regex_path$", $index_string, $position);
+        
         $rules["^$regex_path$"] = $index_string;
         return $rules;
     }
