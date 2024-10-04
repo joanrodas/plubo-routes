@@ -8,6 +8,7 @@ use PluboRoutes\Route\PageRoute;
 use PluboRoutes\Endpoint\EndpointInterface;
 use PluboRoutes\Helpers\RegexHelperRoutes;
 use PluboRoutes\Helpers\RegexHelperEndpoints;
+use PluboRoutes\Middleware\MiddlewareInterface;
 
 /**
  * The Router manages routes using the WordPress rewrite API.
@@ -105,7 +106,7 @@ class Router
         $rules = apply_filters('plubo_routes_rewrite_rules', $rules);
 
         // Add the rules to Polylang's filter
-        add_filter('pll_rewrite_rules', function($pll_rules) use ($rules) {
+        add_filter('pll_rewrite_rules', function ($pll_rules) use ($rules) {
             return array_merge($pll_rules, $rules);
         });
     }
@@ -117,12 +118,53 @@ class Router
     {
         foreach ($this->endpoints as $endpoint) {
             $path = $this->getEndpointPath($endpoint->getPath());
-            register_rest_route($endpoint->getNamespace(), $path, [
-                'methods' => $endpoint->getMethod(),
-                'callback' => $endpoint->getConfig(),
+            $namespace = $endpoint->getNamespace();
+            $method = $endpoint->getMethod();
+
+            // Wrap the main callback with middleware processing
+            $callback = function ($request) use ($endpoint) {
+                return $this->runEndpointMiddlewareStack($endpoint, $request);
+            };
+
+            register_rest_route($namespace, $path, [
+                'methods' => $method,
+                'callback' => $callback,
                 'permission_callback' => $endpoint->getPermissionCallback()
             ]);
         }
+    }
+
+    /**
+     * Run the middleware stack for the endpoint and then call the endpoint's config callback.
+     *
+     * @param EndpointInterface $endpoint
+     * @param \WP_REST_Request $request
+     * @return mixed
+     */
+    private function runEndpointMiddlewareStack(EndpointInterface $endpoint, \WP_REST_Request $request)
+    {
+        $middlewareStack = $endpoint->getMiddlewareStack();
+        $index = 0;
+
+        $runNext = function () use (&$index, $middlewareStack, $endpoint, $request, &$runNext) {
+            if ($index < count($middlewareStack)) {
+                $middleware = $middlewareStack[$index];
+                $index++;
+
+                return is_object($middleware) && $middleware instanceof MiddlewareInterface
+                ? $middleware->handle($request, $runNext)
+                : $middleware($request, $runNext); // For function-based middleware
+
+
+            } else {
+                // Call the main callback if all middleware passed
+                $configCallback = $endpoint->getConfig();
+                $response = $configCallback($request);
+                return $response instanceof \WP_REST_Response ? $response : new \WP_REST_Response($response);
+            }
+        };
+
+        return $runNext();
     }
 
     /**
@@ -191,9 +233,9 @@ class Router
         if ($route instanceof Route) {
             $index_string = $this->addExtraVars($route, $index_string);
         }
-        
+
         add_rewrite_rule("^$regex_path$", $index_string, $position);
-        
+
         $rules["^$regex_path$"] = $index_string;
         return $rules;
     }
@@ -278,7 +320,7 @@ class Router
             $route->addArg($var_name);
             add_rewrite_tag("%$var_name%", '([a-z0-9-]+)');
         }
-        
+
         return $index_string;
     }
 }

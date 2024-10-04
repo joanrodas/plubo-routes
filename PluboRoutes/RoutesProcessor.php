@@ -6,7 +6,7 @@ use PluboRoutes\Route\Route;
 use PluboRoutes\Route\RedirectRoute;
 use PluboRoutes\Route\ActionRoute;
 use PluboRoutes\Route\RouteInterface;
-
+use PluboRoutes\Middleware\MiddlewareInterface;
 /**
  * The Processor is in charge of the interaction between the routing system and
  * the rest of WordPress.
@@ -74,9 +74,7 @@ class RoutesProcessor
      * Clone not allowed.
      *
      */
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Initialize processor with WordPress.
@@ -90,7 +88,6 @@ class RoutesProcessor
 
         // Custom action for router initialization
         do_action('plubo/router_init');
-
         return self::$instance;
     }
 
@@ -173,20 +170,28 @@ class RoutesProcessor
      */
     private function processMatchedRoute(RouteInterface $found_route, \WP $env)
     {
-        $found_args = [];
-        $args_names = $found_route->getArgs();
-        $extra_args = $found_route->getExtraVars();
-
-        foreach ($args_names as $arg_name) {
-            $query_value = $env->query_vars[$arg_name] ?? ($extra_args[$arg_name] ?? false);
-            $found_args[$arg_name] = $query_value;
-        }
-
         $this->matched_route = $found_route;
-        $this->matched_args = $found_args;
+        $this->matched_args = $this->extractArgs($found_route, $env);
 
         // Action hook after matching route request
-        do_action('plubo/after_matching_route_request', $this->matched_route, $this->matched_args, $extra_args, $env);
+        do_action('plubo/after_matching_route_request', $this->matched_route, $this->matched_args, $env);
+    }
+
+
+    /**
+     * Handle route not found error.
+     */
+    private function extractArgs(RouteInterface $route, \WP $env)
+    {
+        $args = [];
+        $extra_args = $route->getExtraVars();
+
+        foreach ($route->getArgs() as $arg_name) {
+            $query_value = $env->query_vars[$arg_name] ?? ($extra_args[$arg_name] ?? false);
+            $args[$arg_name] = $query_value;
+        }
+
+        return $args;
     }
 
     /**
@@ -240,17 +245,46 @@ class RoutesProcessor
     public function doRouteActions()
     {
         if ($this->matched_route instanceof Route || $this->matched_route instanceof ActionRoute || $this->matched_route instanceof RedirectRoute) {
-            // Action hook before executing route actions
-            do_action('plubo/before_executing_route_actions', $this->matched_route, $this->matched_args);
-            $this->executeRouteActions();
+            if ($this->matched_route->getMiddlewareStack()) {
+                $this->runMiddlewareStack($this->matched_route);
+            } else {
+                $this->executeRouteActions();
+            }            
         }
     }
+    
+    /**
+     * Execute middleware before route actions.
+     */
+    private function runMiddlewareStack(RouteInterface $route)
+    {
+        $middlewareStack = $route->getMiddlewareStack();
+        $index = 0;
+        
+        $runNext = function () use (&$index, $middlewareStack, $route, &$runNext) {
+            if ($index < count($middlewareStack)) {
+                $middleware = $middlewareStack[$index];
+                $index++;
 
+                return is_object($middleware) && $middleware instanceof MiddlewareInterface
+                ? $middleware->handle($this->matched_args, $runNext)
+                : $middleware($this->matched_args, $runNext); // For function-based middleware
+            } else {
+                $this->executeRouteActions(); // All middleware passed, execute route
+            }
+        };
+        
+        $runNext();
+    }
+    
     /**
      * Execute actions based on the type of matched route.
      */
     private function executeRouteActions()
     {
+        // Action hook before executing route actions
+        do_action('plubo/before_executing_route_actions', $this->matched_route, $this->matched_args);
+        
         $permission_checker = new PermissionChecker($this->matched_route, $this->matched_args);
         $permission_checker->checkPermissions();
 

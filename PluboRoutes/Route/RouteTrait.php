@@ -31,6 +31,13 @@ trait RouteTrait
     private $args;
 
     /**
+     * Middleware stack for the route.
+     *
+     * @var callable[]
+     */
+    private $middlewareStack = [];
+
+    /**
      * Get the name of the route.
      *
      * @return string
@@ -209,6 +216,26 @@ trait RouteTrait
     {
         $permission_callback = $this->config['permission_callback'] ?? '__return_true';
         return $permission_callback;
+    }
+
+    /**
+     * Add middleware to this route.
+     *
+     * @param callable $middleware
+     */
+    public function useMiddleware(callable $middleware)
+    {
+        $this->middlewareStack[] = $middleware;
+    }
+
+    /**
+     * Get the middleware stack for this route.
+     *
+     * @return array
+     */
+    public function getMiddlewareStack()
+    {
+        return $this->middlewareStack;
     }
 
     /**

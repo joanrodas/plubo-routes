@@ -29,4 +29,7 @@ interface RouteInterface
     public function getAction();
     public function hasCallback();
     public function getStatus();
+
+    public function useMiddleware(callable $middleware);
+    public function getMiddlewareStack();
 }

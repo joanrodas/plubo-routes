@@ -44,6 +44,13 @@ abstract class Endpoint implements EndpointInterface
     protected $method;
 
     /**
+     * Middleware stack for the route.
+     *
+     * @var callable[]
+     */
+    private $middlewareStack = [];
+
+    /**
      * Constructor.
      *
      * @param string $namespace
@@ -107,6 +114,26 @@ abstract class Endpoint implements EndpointInterface
     public function getPermissionCallback()
     {
         return $this->permission_callback;
+    }
+
+    /**
+     * Add middleware to this endpoint.
+     *
+     * @param callable $middleware
+     */
+    public function useMiddleware($middleware)
+    {
+        $this->middlewareStack[] = $middleware;
+    }
+
+    /**
+     * Get the middleware stack for this endpoint.
+     *
+     * @return array
+     */
+    public function getMiddlewareStack()
+    {
+        return $this->middlewareStack;
     }
 
     /**
