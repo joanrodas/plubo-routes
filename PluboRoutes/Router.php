@@ -90,13 +90,24 @@ class Router
     {
         add_rewrite_tag('%' . $this->route_variable . '%', '(.+)');
 
+        $rules = [];
+
         foreach ($this->routes as $route) {
             if ($route instanceof PageRoute) {
                 $this->addPageRule($route);
                 continue;
             }
-            $this->addRule($route);
+
+            $rules = array_merge($rules, $this->addRule($route));
         }
+
+        // Apply custom filter for Polylang
+        $rules = apply_filters('plubo_routes_rewrite_rules', $rules);
+
+        // Add the rules to Polylang's filter
+        add_filter('pll_rewrite_rules', function($pll_rules) use ($rules) {
+            return array_merge($pll_rules, $rules);
+        });
     }
 
     /**
@@ -149,16 +160,27 @@ class Router
         $regex_path = $this->regex_routes->cleanPath($route->getPath());
         $matches = $this->regex_routes->getRegexMatches($regex_path);
         $index_string = 'index.php?' . $this->route_variable . '=' . $route->getName();
+        $rules = [];
 
         if (!$matches) {
-            return;
+            return $rules;
+        }
+
+
+        // Add language param if Polylang is active
+        if (function_exists('pll_current_language')) {
+            $languages = \pll_languages_list();
+            $language_regex = implode('|', $languages);
+            // Use non-capturing group for the slash and capture only the language code
+            $regex_path = "(?:($language_regex)/)?" . $regex_path;
+            $index_string .= "&lang=\$matches[1]";
         }
 
         foreach ($matches[1] as $key => $pattern) {
             $pattern = explode(':', $pattern);
             if (count($pattern) > 1) {
                 $name = $pattern[0];
-                $num_arg = $key + 1;
+                $num_arg = function_exists('pll_current_language') ? $key + 2 : $key + 1;
                 $regex_code = $this->regex_routes->getRegex($pattern[1]);
                 $regex_path = str_replace($matches[0][$key], $regex_code, $regex_path);
                 add_rewrite_tag("%$name%", $regex_code);
@@ -169,7 +191,11 @@ class Router
         if ($route instanceof Route) {
             $index_string = $this->addExtraVars($route, $index_string);
         }
+        
         add_rewrite_rule("^$regex_path$", $index_string, $position);
+        
+        $rules["^$regex_path$"] = $index_string;
+        return $rules;
     }
 
     /**

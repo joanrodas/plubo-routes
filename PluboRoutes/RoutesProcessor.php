@@ -149,6 +149,11 @@ class RoutesProcessor
      */
     public function matchRouteRequest(\WP $env)
     {
+        // Ensure the language is set in query variables if Polylang is active
+        if (function_exists('pll_current_language') && !isset($env->query_vars['lang'])) {
+            $env->query_vars['lang'] = \pll_current_language();
+        }
+
         $found_route = $this->router->match($env->query_vars);
 
         if ($found_route instanceof RouteInterface) {
