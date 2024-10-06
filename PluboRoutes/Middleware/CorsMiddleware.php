@@ -7,31 +7,43 @@ class CorsMiddleware implements MiddlewareInterface
     private $allowedOrigins;
     private $allowedMethods;
     private $allowedHeaders;
+    private $maxAge = 3600;
 
     public function __construct($allowedOrigins = '*', $allowedMethods = ['GET', 'POST', 'OPTIONS'], $allowedHeaders = ['Content-Type', 'Authorization'])
     {
-        $this->allowedOrigins = $allowedOrigins;
-        $this->allowedMethods = $allowedMethods;
-        $this->allowedHeaders = $allowedHeaders;
+        $this->allowedOrigins = is_array($allowedOrigins) ? $allowedOrigins : [$allowedOrigins];
+        $this->allowedMethods = array_map('strtoupper', $allowedMethods);
+        $this->allowedHeaders = array_map('strtolower', $allowedHeaders);
     }
 
     public function handle($request, $next)
     {
-        // Set CORS headers
-        header("Access-Control-Allow-Origin: {$this->allowedOrigins}");
-        header("Access-Control-Allow-Methods: " . implode(', ', $this->allowedMethods));
-        header("Access-Control-Allow-Headers: " . implode(', ', $this->allowedHeaders));
+        $origin = $request->get_header('origin');
 
-        // If it's a preflight request (OPTIONS), allow it without running further middleware
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            exit;
+        if ($this->isAllowedOrigin($origin)) {
+            header("Access-Control-Allow-Origin: {$origin}");
+            header('Access-Control-Allow-Credentials: true');
+            header("Access-Control-Allow-Methods: " . implode(', ', $this->allowedMethods));
+            header("Access-Control-Allow-Headers: " . implode(', ', $this->allowedHeaders));
+            header("Access-Control-Max-Age: {$this->maxAge}");
         }
 
-        // Enforce allowed methods for the actual request
-        if (!in_array($_SERVER['REQUEST_METHOD'], $this->allowedMethods)) {
-            return new \WP_REST_Response(['error' => 'Method not allowed'], 405); // 405 Method Not Allowed
+        if ($request->get_method() === 'OPTIONS') {
+            return new \WP_REST_Response(null, 204);
+        }
+
+        if (!in_array($request->get_method(), $this->allowedMethods)) {
+            return new \WP_REST_Response(['error' => 'Method not allowed'], 405);
         }
 
         return $next($request);
+    }
+
+    protected function isAllowedOrigin($origin)
+    {
+        if (in_array('*', $this->allowedOrigins)) {
+            return true;
+        }
+        return in_array($origin, $this->allowedOrigins);
     }
 }
