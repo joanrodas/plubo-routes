@@ -1,0 +1,54 @@
+{
+    "type": "object",
+    "properties": {
+        "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 15
+        },
+        "age": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 120
+        },
+        "email": {
+            "type": "string",
+            "format": "email"
+        },
+        "is_subscribed": {
+            "type": "boolean"
+        },
+        "favorite_numbers": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 1,
+            "maxItems": 5
+        },
+        "profile": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "website": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "bio"
+            ]
+        }
+    },
+    "required": [
+        "username",
+        "age",
+        "email",
+        "is_subscribed",
+        "favorite_numbers",
+        "profile"
+    ]
+}

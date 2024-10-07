@@ -2,20 +2,57 @@
 
 namespace PluboRoutes\Middleware;
 
+use WP_REST_Response;
+use WP_Error;
+
 class RateLimitMiddleware implements MiddlewareInterface
 {
+    /**
+     * Maximum number of allowed requests within the window time.
+     *
+     * @var int
+     */
     private $maxRequests;
+
+    /**
+     * Maximum number of allowed requests within the window time.
+     *
+     * @var int
+     */
     private $windowTime;
+
+    /**
+     * Prefix for storing transients related to rate limiting.
+     *
+     * @var string
+     */
     private $prefix = 'rate_limit_';
+
+    /**
+     * Type of rate limiting: 'ip', 'user', or 'endpoint'.
+     *
+     * @var string
+     */
     private $type;
 
-    public function __construct($maxRequests = 10, $windowTime = 60, $type = 'ip')
-    {
+    public function __construct(
+        int $maxRequests = 10,
+        int $windowTime = 60,
+        string $type = 'ip'
+    ) {
         $this->maxRequests = max(1, intval($maxRequests));
         $this->windowTime = max(1, intval($windowTime));
         $this->type = in_array($type, ['ip', 'user', 'endpoint']) ? $type : 'ip';
     }
 
+    /**
+     * Handles the incoming request and enforces rate limiting.
+     *
+     * @param mixed    $request The incoming request object.
+     * @param callable $next    The next middleware to execute.
+     *
+     * @return WP_REST_Response|WP_Error The response after rate limiting.
+     */
     public function handle($request, $next)
     {
         $key = $this->getRateLimitKey($request);
@@ -34,9 +71,13 @@ class RateLimitMiddleware implements MiddlewareInterface
         $response = $next($request);
 
         // Add rate limit headers
-        $response->header('X-RateLimit-Limit', $this->maxRequests);
-        $response->header('X-RateLimit-Remaining', max(0, $this->maxRequests - ($requestCount + 1)));
-        $response->header('X-RateLimit-Reset', time() + $this->windowTime);
+        if ($response instanceof WP_REST_Response) {
+            $response->set_headers([
+                'X-RateLimit-Limit'     => $this->maxRequests,
+                'X-RateLimit-Remaining' => max(0, $this->maxRequests - ($requestCount + 1)),
+                'X-RateLimit-Reset'     => time() + $this->windowTime,
+            ]);
+        }
 
         return $response;
     }
@@ -57,18 +98,36 @@ class RateLimitMiddleware implements MiddlewareInterface
         return $this->prefix . md5($identifier . $this->type);
     }
 
-    protected function getClientIp()
+    /**
+     * Retrieves the client's IP address securely.
+     *
+     * @return string The sanitized client IP or 'unknown'.
+     */
+    protected function getClientIp(): string
     {
-        foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key) {
-            if (array_key_exists($key, $_SERVER) === true) {
-                foreach (explode(',', $_SERVER[$key]) as $ip) {
-                    $ip = trim($ip);
+        $ipKeys = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'REMOTE_ADDR',
+        ];
 
-                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
-                        return $ip;
+        foreach ($ipKeys as $key) {
+            if (!empty($_SERVER[$key])) {
+                // Handle multiple IPs (e.g., X-Forwarded-For: client, proxy1, proxy2)
+                $ips = explode(',', wp_unslash($_SERVER[$key]));
+                foreach ($ips as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                        return sanitize_text_field($ip);
                     }
                 }
             }
         }
+
+        return 'unknown';
     }
 }

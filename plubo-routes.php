@@ -14,7 +14,66 @@
  * Domain Path:       /languages
  */
 
+use PluboRoutes\Middleware\CorsMiddleware;
+use PluboRoutes\Middleware\CacheMiddleware;
+use PluboRoutes\Middleware\RateLimitMiddleware;
+use PluboRoutes\Middleware\JsonTokenValidationMiddleware;
+use PluboRoutes\Middleware\SchemaValidator;
+
+
 define('PLUBO_ROUTES_PLUGIN_DIR', plugin_dir_path(__FILE__));
 require_once PLUBO_ROUTES_PLUGIN_DIR . 'vendor/autoload.php';
 
 PluboRoutes\RoutesProcessor::init();
+
+add_filter('plubo/routes', function ($routes) {
+  $test_route = new PluboRoutes\Route\Route(
+    'testing',
+    function ($matches) {
+      echo 'TEST';
+    },
+    [
+      'render' => true,
+      'name' => 'test-route'
+    ]
+  );
+
+  // $test_route->useMiddleware('jwtMiddleware');
+
+  $routes[] = $test_route;
+  return $routes;
+});
+
+function loggingMiddleware($request, $next)
+{
+  // Log the request data
+  $route = $_SERVER['REQUEST_URI'] ?? 'unknown';
+  $method = $_SERVER['REQUEST_METHOD'] ?? 'unknown';
+
+  error_log("Accessing route: {$route} with method: {$method} at " . date('Y-m-d H:i:s'));
+
+  // Proceed to the next middleware or main route action
+  return $next();
+}
+
+add_filter('plubo/endpoints', function ($routes) {
+  $test_route = new PluboRoutes\Endpoint\PostEndpoint(
+    'sirvelia/v1',
+    'test',
+    function ($request) {
+      return ['test' => 'TEST'];
+    }
+  );
+
+  $schemaPath = PLUBO_ROUTES_PLUGIN_DIR . 'test.json';
+  $schema = json_decode(file_get_contents($schemaPath));
+  $test_route->useMiddleware(new SchemaValidator($schema));
+
+  // $test_route->useMiddleware(new CorsMiddleware('*', ['GET', 'POST'], ['Content-Type', 'Authorization']));
+  // $test_route->useMiddleware(new JsonTokenValidationMiddleware('secret')); // 10 minutes
+  // $test_route->useMiddleware(new CacheMiddleware(600)); // 10 minutes
+  // $test_route->useMiddleware(new RateLimitMiddleware(1, 30)); // 1 requests per 30 seconds
+
+  $routes[] = $test_route;
+  return $routes;
+});
