@@ -247,7 +247,8 @@ trait RouteTrait
     {
         return [
             'path' => $this->path,
-            'extra_vars' => $this->getExtraVars()
+            'extra_vars' => $this->getExtraVars(),
+            'name' => $this->getName()
         ];
     }
 
@@ -260,5 +261,6 @@ trait RouteTrait
     {
         $this->path = $data['path'];
         $this->config['extra_vars'] = $data['extra_vars'];
+        $this->config['name'] = $data['name'];
     }
 }
