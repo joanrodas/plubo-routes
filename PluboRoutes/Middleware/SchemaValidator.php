@@ -4,6 +4,7 @@ namespace PluboRoutes\Middleware;
 
 use JsonSchema\Validator;
 use JsonSchema\Constraints\Constraint;
+use WP_REST_Request;
 
 class SchemaValidator implements MiddlewareInterface
 {
@@ -14,7 +15,7 @@ class SchemaValidator implements MiddlewareInterface
         $this->schema = $schema;
     }
 
-    public function handle($request, $next)
+    public function handle(WP_REST_Request $request, callable $next)
     {
         $params = $request->get_params();
         $paramsObject = json_decode(json_encode($params));

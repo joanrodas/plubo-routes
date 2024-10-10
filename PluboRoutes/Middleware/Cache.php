@@ -2,7 +2,9 @@
 
 namespace PluboRoutes\Middleware;
 
-class CacheMiddleware implements MiddlewareInterface
+use WP_REST_Request;
+
+class Cache implements MiddlewareInterface
 {
     private $cacheTime;
 
@@ -11,7 +13,7 @@ class CacheMiddleware implements MiddlewareInterface
         $this->cacheTime = $cacheTime;
     }
 
-    public function handle($request, $next)
+    public function handle(WP_REST_Request $request, callable $next)
     {
         $cacheKey = 'route_cache_' . md5($_SERVER['REQUEST_URI']);
         $cachedResponse = get_transient($cacheKey);

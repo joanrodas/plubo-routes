@@ -2,10 +2,11 @@
 
 namespace PluboRoutes\Middleware;
 
+use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
 
-class JsonTokenValidationMiddleware implements MiddlewareInterface
+class JwtValidation implements MiddlewareInterface
 {
     /**
      * Secret key used for signing the JWT.
@@ -45,7 +46,7 @@ class JsonTokenValidationMiddleware implements MiddlewareInterface
      * 
      * @return WP_REST_Response|WP_Error The response after validation.
      */
-    public function handle($request, $next)
+    public function handle(WP_REST_Request $request, callable $next)
     {
         $authHeader = $this->get_authorization_header();
 

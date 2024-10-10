@@ -2,10 +2,11 @@
 
 namespace PluboRoutes\Middleware;
 
+use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
 
-class RateLimitMiddleware implements MiddlewareInterface
+class RateLimit implements MiddlewareInterface
 {
     /**
      * Maximum number of allowed requests within the window time.
@@ -53,7 +54,7 @@ class RateLimitMiddleware implements MiddlewareInterface
      *
      * @return WP_REST_Response|WP_Error The response after rate limiting.
      */
-    public function handle($request, $next)
+    public function handle(WP_REST_Request $request, callable $next)
     {
         $key = $this->getRateLimitKey($request);
         $requestCount = get_transient($key);

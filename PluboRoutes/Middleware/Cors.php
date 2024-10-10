@@ -2,7 +2,9 @@
 
 namespace PluboRoutes\Middleware;
 
-class CorsMiddleware implements MiddlewareInterface
+use WP_REST_Request;
+
+class Cors implements MiddlewareInterface
 {
     private $allowedOrigins;
     private $allowedMethods;
@@ -16,7 +18,7 @@ class CorsMiddleware implements MiddlewareInterface
         $this->allowedHeaders = array_map('strtolower', $allowedHeaders);
     }
 
-    public function handle($request, $next)
+    public function handle(WP_REST_Request $request, callable $next)
     {
         $origin = $request->get_header('origin');
 
