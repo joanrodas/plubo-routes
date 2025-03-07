@@ -40,7 +40,7 @@ class RoutesProcessor
     /**
      * The router instance.
      *
-     * @var Router|null
+     * @var RoutesProcessor|null
      */
     private static $instance = NULL;
 
@@ -80,15 +80,77 @@ class RoutesProcessor
      * Initialize processor with WordPress.
      *
      */
-    public static function init()
+    public static function init($plugin_dir_path = '', $namespace = '')
     {
         if (self::$instance === null) {
             self::$instance = new self(new Router());
         }
 
+        if (!empty($plugin_dir_path) && !empty($namespace)) {
+            $dynamic_routes = self::$instance->getDynamicRoutes($plugin_dir_path, $namespace);
+            
+            foreach($dynamic_routes as $dynamic_route) {
+                self::$instance->router->addRoute($dynamic_route);
+            }
+        }
+        
         // Custom action for router initialization
         do_action('plubo/router_init');
         return self::$instance;
+    }
+
+    public function getDynamicRoutes($plugin_dir_path = '', $namespace = '')
+    {
+        global $wp_filesystem;
+
+        require_once(ABSPATH . '/wp-admin/includes/file.php');
+        WP_Filesystem();
+
+        $routes_json_path = $plugin_dir_path . 'dist/routes.json';
+
+        $routes_content = $wp_filesystem->get_contents($routes_json_path);
+        $routes_info = json_decode($routes_content, true);
+
+        foreach ($routes_info as $route) {
+            $route_path = $route['route'];
+            unset($route['route']);
+
+            $template_name = str_replace('/', '.', $route_path);
+            $controller = function ($matches) use ($wp_filesystem, $template_name, $route, $plugin_dir_path) {
+
+                $file_path = $plugin_dir_path . $route['path'];
+                $html = $wp_filesystem->get_contents($file_path);
+                $html = preg_replace('/@configRoute\s*\(\s*(\{[\s\S]*?\})\s*\)/s', '', $html);
+
+                return apply_filters('plubo/get_route_html', $html, $template_name, $matches);
+            };
+
+            // Parse controller
+            $route_controller = ($route['controller'] ?? false) ? str_replace('.', '::', $route['controller']) : false;
+            if ($route_controller && is_callable("\\$namespace\\Controllers\\$route_controller")) {
+                $controller = "\\$namespace\\Controllers\\$route_controller";
+            }
+
+            // Parse roles callback
+            if (isset($route['allowed_roles']) && is_string($route['allowed_roles']) && str_contains($route['allowed_roles'], '.')) {
+                $roles_controller = str_replace('.', '::', $route['allowed_roles']);
+                if (is_callable($roles_controller)) {
+                    $route['allowed_roles'] = "\\$namespace\\Controllers\\$roles_controller";
+                }
+            }
+
+            // Parse capabilities callback
+            if (isset($route['allowed_capabilities']) && is_string($route['allowed_capabilities']) && str_contains($route['allowed_capabilities'], '.')) {
+                $capabilities_controller = str_replace('.', '::', $route['allowed_capabilities']);
+                if (is_callable($capabilities_controller)) {
+                    $route['allowed_capabilities'] = "\\$namespace\\Controllers\\$capabilities_controller";
+                }
+            }
+
+            $routes[] = new Route($route_path, $controller, wp_parse_args($route, ['render' => true]));
+        }
+
+        return $routes;
     }
 
     /**
