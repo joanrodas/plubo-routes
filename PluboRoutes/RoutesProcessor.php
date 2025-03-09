@@ -92,6 +92,8 @@ class RoutesProcessor
             foreach($dynamic_routes as $dynamic_route) {
                 self::$instance->router->addRoute($dynamic_route);
             }
+
+            self::$instance->maybeFlushRewriteRules($dynamic_routes, 'plubo-dynamic-' . strtolower($namespace));
         }
         
         // Custom action for router initialization
