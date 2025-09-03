@@ -91,35 +91,92 @@ class SchemaValidator implements MiddlewareInterface
             case 'boolean':
                 return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             case 'array':
-                if (is_array($value) && isset($propertySchema->items)) {
+                if (!is_array($value)) return [];
+            
+                // If a schema for items is provided, sanitize each element with it.
+                if (isset($propertySchema->items)) {
                     return array_map(function ($item) use ($propertySchema) {
                         return $this->sanitizeValue($item, $propertySchema->items);
                     }, $value);
                 }
-                return [];
+            
+                // Deep-sanitize unknown array contents
+                return array_map([$this, 'sanitizeLoose'], $value);
             case 'object':
-                if (is_object($value) && isset($propertySchema->properties)) {
+                if (is_object($value)) {
                     $sanitizedObject = [];
-                    foreach ($propertySchema->properties as $subKey => $subSchema) {
-                        if (isset($value->$subKey)) {
-                            $sanitizedObject[$subKey] = $this->sanitizeValue($value->$subKey, $subSchema);
+    
+                    // Process defined properties
+                    if (isset($propertySchema->properties)) {
+                        foreach ($propertySchema->properties as $subKey => $subSchema) {
+                            if (isset($value->$subKey)) {
+                                $sanitizedObject[$subKey] = $this->sanitizeValue($value->$subKey, $subSchema);
+                            }
                         }
                     }
+    
+                    // Handle additional properties if allowed (boolean true => sanitize strings as text)
+                    if (isset($propertySchema->additionalProperties) && $propertySchema->additionalProperties === true) {
+                        $definedProperties = isset($propertySchema->properties) ? array_keys((array)$propertySchema->properties) : [];
+                        foreach ($value as $subKey => $subValue) {
+                            if (!in_array($subKey, $definedProperties, true)) {
+                                $sanitizedObject[$subKey] = is_string($subValue) ? sanitize_text_field($subValue) : $subValue;
+                            }
+                        }
+                    }
+    
                     return (object)$sanitizedObject;
                 }
                 return new \stdClass();
             case 'null':
                 return null;
             default:
-                if (is_array($type)) { // Handle multiple types
+                // Handle multiple types like ["string","null"]
+                if (is_array($type)) {
                     foreach ($type as $t) {
-                        $sanitized = $this->sanitizeValue($value, $t);
-                        if ($sanitized !== null) {
-                            return $sanitized;
-                        }
+                        $sanitized = $this->sanitizeValue($value, (object)['type' => $t]);
+                        if ($sanitized !== null) return $sanitized;
                     }
                 }
                 return sanitize_text_field($value);
         }
+    }
+
+    /**
+     * Deep, schema-agnostic sanitizer used as a safe fallback.
+     * - Strings: sanitize_text_field
+     * - Numbers/bools: cast
+     * - Arrays/objects: recurse
+     */
+    private function sanitizeLoose($data)
+    {
+        if (is_string($data)) {
+            return sanitize_text_field($data);
+        }
+        if (is_int($data)) return (int)$data;
+        if (is_float($data)) return (float)$data;
+        if (is_bool($data)) return (bool)$data;
+        if (is_null($data)) return null;
+    
+        if (is_array($data)) {
+            $out = [];
+            foreach ($data as $k => $v) {
+                $safeKey = is_string($k) ? sanitize_key($k) : $k;
+                $out[$safeKey] = $this->sanitizeLoose($v);
+            }
+            return $out;
+        }
+    
+        if (is_object($data)) {
+            $out = [];
+            foreach (get_object_vars($data) as $k => $v) {
+                $safeKey = sanitize_key($k);
+                $out[$safeKey] = $this->sanitizeLoose($v);
+            }
+            return (object)$out;
+        }
+    
+        // Fallback for unexpected types/resources
+        return null;
     }
 }
