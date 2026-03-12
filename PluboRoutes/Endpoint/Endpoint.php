@@ -2,12 +2,16 @@
 
 namespace PluboRoutes\Endpoint;
 
+use PluboRoutes\Middleware\MiddlewareHelpersTrait;
+
 /**
  * An Endpoint describes a route and its parameters.
  *
  */
 abstract class Endpoint implements EndpointInterface
 {
+    use MiddlewareHelpersTrait;
+
     /**
      * The endpoint namespace.
      *
@@ -46,7 +50,7 @@ abstract class Endpoint implements EndpointInterface
     /**
      * Middleware stack for the route.
      *
-     * @var callable[]
+     * @var array
      */
     private $middlewareStack = [];
 
@@ -119,11 +123,13 @@ abstract class Endpoint implements EndpointInterface
     /**
      * Add middleware to this endpoint.
      *
-     * @param callable $middleware
+     * @param mixed $middleware
+     * @return $this
      */
     public function useMiddleware($middleware)
     {
         $this->middlewareStack[] = $middleware;
+        return $this;
     }
 
     /**

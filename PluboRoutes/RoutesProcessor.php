@@ -323,15 +323,16 @@ class RoutesProcessor
     private function runMiddlewareStack(RouteInterface $route)
     {
         $middlewareStack = $route->getMiddlewareStack();
+        $routeRequest = $this->buildRouteMiddlewareRequest();
         $index = 0;
         
-        $runNext = function () use (&$index, $middlewareStack, $route, &$runNext) {
+        $runNext = function () use (&$index, $middlewareStack, $routeRequest, &$runNext) {
             if ($index < count($middlewareStack)) {
                 $middleware = $middlewareStack[$index];
                 $index++;
 
                 return is_object($middleware) && $middleware instanceof MiddlewareInterface
-                ? $middleware->handle($this->matched_args, $runNext)
+                ? $middleware->handle($routeRequest, $runNext)
                 : $middleware($this->matched_args, $runNext); // For function-based middleware
             } else {
                 $this->executeRouteActions(); // All middleware passed, execute route
@@ -339,6 +340,30 @@ class RoutesProcessor
         };
         
         $runNext();
+    }
+
+    /**
+     * Build a request object for object-based middleware used on routes.
+     *
+     * @return \WP_REST_Request
+     */
+    private function buildRouteMiddlewareRequest(): \WP_REST_Request
+    {
+        $method = isset($_SERVER['REQUEST_METHOD'])
+            ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD']))
+            : 'GET';
+
+        $uri = isset($_SERVER['REQUEST_URI'])
+            ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']))
+            : '/';
+
+        $request = new \WP_REST_Request($method, $uri);
+
+        foreach ($this->matched_args as $key => $value) {
+            $request->set_param($key, $value);
+        }
+
+        return $request;
     }
     
     /**

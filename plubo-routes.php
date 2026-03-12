@@ -69,14 +69,14 @@ PluboRoutes\RoutesProcessor::init();
 
 //   $schemaPath = PLUBO_ROUTES_PLUGIN_DIR . 'test.json';
 //   $schema = json_decode(file_get_contents($schemaPath));
-//   $test_route->useMiddleware(new SchemaValidator($schema));
-
-//   $test_route->useMiddleware(new Cors('*', ['GET', 'POST'], ['Content-Type', 'Authorization']));
-//   $test_route->useMiddleware(new ApplicationPasswordValidation());
-//   $test_route->useMiddleware(new WooCommerceApiKeyValidation());
-//   $test_route->useMiddleware(new JwtValidation('secret')); // 10 minutes
-//   $test_route->useMiddleware(new Cache(600)); // 10 minutes
-//   $test_route->useMiddleware(new RateLimit(1, 30)); // 1 requests per 30 seconds
+//   $test_route
+//     ->useSchemaValidator($schema)
+//     ->useCors('*', ['GET', 'POST'], ['Content-Type', 'Authorization'])
+//     ->useApplicationPasswordValidation()
+//     ->useWooCommerceApiKeyValidation()
+//     ->useJwtValidation('secret') // 10 minutes
+//     ->useCache(600) // 10 minutes
+//     ->useRateLimit(1, 30); // 1 requests per 30 seconds
 
 //   $routes[] = $test_route;
 //   return $routes;

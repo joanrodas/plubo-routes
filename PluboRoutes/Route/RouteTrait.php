@@ -2,12 +2,15 @@
 
 namespace PluboRoutes\Route;
 
+use PluboRoutes\Middleware\MiddlewareHelpersTrait;
+
 /**
  * Common route functions.
  *
  */
 trait RouteTrait
 {
+    use MiddlewareHelpersTrait;
 
     /**
      * The URL path that the route needs to match.
@@ -33,7 +36,7 @@ trait RouteTrait
     /**
      * Middleware stack for the route.
      *
-     * @var callable[]
+     * @var array
      */
     private $middlewareStack = [];
 
@@ -221,11 +224,13 @@ trait RouteTrait
     /**
      * Add middleware to this route.
      *
-     * @param callable $middleware
+     * @param mixed $middleware
+     * @return $this
      */
-    public function useMiddleware(callable $middleware)
+    public function useMiddleware($middleware)
     {
         $this->middlewareStack[] = $middleware;
+        return $this;
     }
 
     /**
