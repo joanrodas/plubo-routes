@@ -18,6 +18,8 @@ use PluboRoutes\Middleware\Cors;
 use PluboRoutes\Middleware\Cache;
 use PluboRoutes\Middleware\RateLimit;
 use PluboRoutes\Middleware\JwtValidation;
+use PluboRoutes\Middleware\ApplicationPasswordValidation;
+use PluboRoutes\Middleware\WooCommerceApiKeyValidation;
 use PluboRoutes\Middleware\SchemaValidator;
 
 
@@ -70,6 +72,8 @@ PluboRoutes\RoutesProcessor::init();
 //   $test_route->useMiddleware(new SchemaValidator($schema));
 
 //   $test_route->useMiddleware(new Cors('*', ['GET', 'POST'], ['Content-Type', 'Authorization']));
+//   $test_route->useMiddleware(new ApplicationPasswordValidation());
+//   $test_route->useMiddleware(new WooCommerceApiKeyValidation());
 //   $test_route->useMiddleware(new JwtValidation('secret')); // 10 minutes
 //   $test_route->useMiddleware(new Cache(600)); // 10 minutes
 //   $test_route->useMiddleware(new RateLimit(1, 30)); // 1 requests per 30 seconds
